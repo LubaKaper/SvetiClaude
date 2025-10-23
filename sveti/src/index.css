@@ -1,0 +1,144 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Design tokens for consistent theming */
+    --font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    
+    /* Light mode colors */
+    --bg-primary: theme('colors.stone.50');
+    --bg-card: theme('colors.white');
+    --bg-input: theme('colors.stone.100');
+    --text-primary: theme('colors.slate.800');
+    --text-secondary: theme('colors.slate.600');
+    --text-muted: theme('colors.slate.500');
+    --border-color: theme('colors.stone.200');
+    
+    /* Accent colors */
+    --accent-primary: theme('colors.teal.500');
+    --accent-hover: theme('colors.teal.600');
+    --accent-light: theme('colors.teal.50');
+  }
+  
+  .dark {
+    /* Dark mode colors */
+    --bg-primary: theme('colors.slate.900');
+    --bg-card: theme('colors.slate.800');
+    --bg-input: theme('colors.slate.700');
+    --text-primary: theme('colors.slate.100');
+    --text-secondary: theme('colors.slate.300');
+    --text-muted: theme('colors.slate.400');
+    --border-color: theme('colors.slate.700');
+  }
+  
+  * {
+    font-family: var(--font-family);
+    @apply leading-relaxed;
+  }
+  
+  body {
+    @apply antialiased text-base bg-stone-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+  }
+  
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+  
+  /* Skip to main content for accessibility */
+  .skip-link {
+    @apply sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 focus:z-50;
+    @apply bg-teal-500 text-white px-4 py-2 rounded-lg font-medium;
+    @apply focus:ring-4 focus:ring-teal-500/20;
+  }
+  
+  /* Enhanced focus for accessibility */
+  *:focus-visible {
+    @apply outline-none ring-4 ring-teal-500/20 ring-offset-2 ring-offset-stone-50 dark:ring-offset-slate-900;
+    transition: box-shadow 0.2s ease-in-out;
+  }
+  
+  /* Interactive elements should meet minimum touch target size */
+  button, [role="button"], input[type="submit"] {
+    @apply min-h-[44px];
+  }
+  
+  /* Reduce motion for accessibility */
+  @media (prefers-reduced-motion: reduce) {
+    * {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+    }
+    
+    .motion-reduce\:transition-none {
+      transition: none !important;
+    }
+  }
+  
+  /* High contrast mode support */
+  @media (prefers-contrast: high) {
+    * {
+      --border-color: currentColor;
+    }
+  }
+}
+
+/* Custom animations for Sveti chat messages */
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes slideInFromBottom {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-fadeIn {
+  animation: fadeIn 0.3s ease-out;
+}
+
+.animate-slideIn {
+  animation: slideInFromBottom 0.4s ease-out;
+}
+
+/* Custom scrollbar styling */
+.scrollbar-thin {
+  scrollbar-width: thin;
+  scrollbar-color: theme('colors.teal.300') transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar {
+  width: 6px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background: theme('colors.teal.300');
+  border-radius: 3px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background: theme('colors.teal.400');
+}
