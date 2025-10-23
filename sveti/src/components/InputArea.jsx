@@ -6,31 +6,33 @@ import { useState, useRef } from 'react'
  */
 function InputArea({ onSendMessage, isLoading, subject }) {
   const [inputValue, setInputValue] = useState('')
+  const [currentActionType, setCurrentActionType] = useState(null)
   const textareaRef = useRef(null)
 
   // Action chips based on subject
   const getActionChips = () => {
     if (subject === 'algebra') {
       return [
-        { emoji: '📝', text: 'Explain Simply', prompt: 'Please explain this concept in simple terms: ' },
-        { emoji: '👣', text: 'Show Steps', prompt: 'Please show me the step-by-step solution for: ' },
-        { emoji: '💪', text: 'Practice', prompt: 'Can you give me practice problems for: ' },
-        { emoji: '✅', text: 'Check Work', prompt: 'Please check my work on this problem: ' }
+        { emoji: '📝', text: 'Explain Simply', prompt: 'Please explain this concept in simple terms: ', actionType: 'explain' },
+        { emoji: '👣', text: 'Show Steps', prompt: 'Please show me the step-by-step solution for: ', actionType: 'steps' },
+        { emoji: '💪', text: 'Practice', prompt: 'Can you give me practice problems for: ', actionType: 'practice' },
+        { emoji: '✅', text: 'Check Work', prompt: 'Please check my work on this problem: ', actionType: 'check' }
       ]
     } else { // ELA
       return [
-        { emoji: '💡', text: 'Brainstorm', prompt: 'Help me brainstorm ideas for: ' },
-        { emoji: '📋', text: 'Outline', prompt: 'Help me create an outline for: ' },
-        { emoji: '✍️', text: 'Improve', prompt: 'Please help me improve this writing: ' },
-        { emoji: '✓', text: 'Grammar', prompt: 'Please check the grammar in this text: ' }
+        { emoji: '💡', text: 'Brainstorm', prompt: 'Help me brainstorm ideas for: ', actionType: 'brainstorm' },
+        { emoji: '📋', text: 'Outline', prompt: 'Help me create an outline for: ', actionType: 'outline' },
+        { emoji: '✍️', text: 'Improve', prompt: 'Please help me improve this writing: ', actionType: 'improve' },
+        { emoji: '✓', text: 'Grammar', prompt: 'Please check the grammar in this text: ', actionType: 'grammar' }
       ]
     }
   }
 
   // Handle chip click
-  const handleChipClick = (prompt) => {
+  const handleChipClick = (prompt, actionType) => {
     if (isLoading) return
     setInputValue(prompt)
+    setCurrentActionType(actionType)
     if (textareaRef.current) {
       textareaRef.current.focus()
     }
@@ -41,8 +43,9 @@ function InputArea({ onSendMessage, isLoading, subject }) {
     e.preventDefault()
     if (!inputValue.trim() || isLoading) return
     
-    onSendMessage(inputValue.trim())
+    onSendMessage(inputValue.trim(), currentActionType)
     setInputValue('')
+    setCurrentActionType(null) // Reset action type after sending
   }
 
   // Handle textarea key press
@@ -56,6 +59,11 @@ function InputArea({ onSendMessage, isLoading, subject }) {
   // Auto-resize textarea
   const handleInputChange = (e) => {
     setInputValue(e.target.value)
+    
+    // Clear action type if user manually edits (not from chip click)
+    if (currentActionType && !getActionChips().some(chip => e.target.value.startsWith(chip.prompt))) {
+      setCurrentActionType(null)
+    }
     
     // Auto-resize
     if (textareaRef.current) {
@@ -72,7 +80,7 @@ function InputArea({ onSendMessage, isLoading, subject }) {
           {getActionChips().map((chip, index) => (
             <button
               key={index}
-              onClick={() => handleChipClick(chip.prompt)}
+              onClick={() => handleChipClick(chip.prompt, chip.actionType)}
               disabled={isLoading}
               className="flex items-center gap-2 px-5 py-2.5 bg-stone-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-base font-medium whitespace-nowrap transition-all duration-300 ease-in-out hover:shadow-md hover:-translate-y-1 hover:bg-teal-100 hover:text-teal-700 dark:hover:bg-teal-900/30 dark:hover:text-teal-300 focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 transform min-h-[44px]"
               aria-label={`Use prompt: ${chip.text}`}

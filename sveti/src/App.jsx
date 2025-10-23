@@ -1,13 +1,15 @@
 import { useState, useEffect } from 'react'
 import MessageList from './components/MessageList'
 import InputArea from './components/InputArea'
-import { useMockChat } from './hooks/useMockChat'
+import TestOpenAI from './components/TestOpenAI'
+import { useRealChat } from './hooks/useRealChat'
 import './index.css'
 
 function App() {
   const [darkMode, setDarkMode] = useState(false)
   const [subject, setSubject] = useState('algebra')
-  const { messages, isLoading, sendMessage, clearMessages } = useMockChat(subject)
+  const [testMode, setTestMode] = useState(false)
+  const { messages, isLoading, sendMessage, clearMessages } = useRealChat(subject)
 
   useEffect(() => {
     if (darkMode) {
@@ -75,6 +77,19 @@ function App() {
               </button>
             )}
 
+            {/* Test Mode Toggle */}
+            <button
+              onClick={() => setTestMode(!testMode)}
+              className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
+                testMode
+                  ? 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-400'
+                  : 'bg-stone-100 dark:bg-slate-700 text-slate-700 dark:text-slate-200 hover:bg-stone-200 dark:hover:bg-slate-600'
+              }`}
+              title="Toggle test mode"
+            >
+              🧪 {testMode ? 'Exit' : 'Test'}
+            </button>
+
             {/* Dark Mode Toggle */}
             <button
               onClick={() => setDarkMode(!darkMode)}
@@ -87,23 +102,33 @@ function App() {
         </div>
       </header>
 
-      {/* Main Chat Area */}
+      {/* Main Content Area */}
       <main className="flex-1 overflow-hidden">
-        <div className="h-full max-w-5xl mx-auto">
-          <MessageList messages={messages} isLoading={isLoading} />
-        </div>
+        {testMode ? (
+          <div className="h-full overflow-y-auto">
+            <TestOpenAI />
+          </div>
+        ) : (
+          <>
+            <div className="h-full max-w-5xl mx-auto">
+              <MessageList messages={messages} isLoading={isLoading} />
+            </div>
+          </>
+        )}
       </main>
 
-      {/* Input Area */}
-      <div className="flex-shrink-0 border-t border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800">
-        <div className="max-w-5xl mx-auto">
-          <InputArea
-            onSendMessage={sendMessage}
-            isLoading={isLoading}
-            subject={subject}
-          />
+      {/* Input Area - only show when not in test mode */}
+      {!testMode && (
+        <div className="flex-shrink-0 border-t border-stone-200 dark:border-slate-700 bg-white dark:bg-slate-800">
+          <div className="max-w-5xl mx-auto">
+            <InputArea 
+              onSendMessage={sendMessage}
+              isLoading={isLoading}
+              subject={subject}
+            />
+          </div>
         </div>
-      </div>
+      )}
     </div>
   )
 }
