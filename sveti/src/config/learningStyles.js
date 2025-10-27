@@ -26,7 +26,7 @@ export const learningStyles = {
     description: 'Multiple worked examples',
     color: 'from-orange-500 to-red-500',
     ringColor: 'ring-orange-300 dark:ring-orange-700',
-    promptModifier: 'EXAMPLES approach: Teach through 2-3 worked examples with complete solutions.'
+    promptModifier: 'Teach through concrete, worked examples. DO NOT ask the student questions - just show examples directly.\n\nStructure your response:\n1. Brief concept explanation (1-2 sentences)\n2. Example 1 with full solution\n3. Example 2 with full solution\n4. Example 3 with full solution (if relevant)\n5. Offer practice problems\n\nStart immediately with examples. Do not ask "What do you know?" or "Can you tell me?" - just demonstrate with clear examples.'
   },
   socratic: {
     id: 'socratic',
@@ -42,7 +42,7 @@ export const learningStyles = {
     description: 'Real-world analogies and metaphors',
     color: 'from-indigo-500 to-purple-600',
     ringColor: 'ring-indigo-300 dark:ring-indigo-700',
-    promptModifier: 'STORIES approach: Use real-world analogies and "It\'s like when you..." explanations.'
+    promptModifier: 'Explain using real-world analogies and stories. DO NOT ask the student questions first - just tell the story/analogy directly.\n\nStructure your response:\n1. Start with "Think of it like this..." or "Imagine..."\n2. Tell the analogy/story that explains the concept\n3. Connect it back to the actual topic\n4. Use everyday experiences they relate to\n\nDo not ask "Have you ever...?" and then answer it yourself. Just tell the story and make the connection. Be direct and engaging.'
   }
 }
 
