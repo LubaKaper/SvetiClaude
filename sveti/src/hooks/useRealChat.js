@@ -113,14 +113,7 @@ export function useRealChat(subject = 'algebra', learningStyle = 'visual') {
     const learningStyleModifier = getLearningStylePrompt(learningStyle)
 
     // Combine base prompt with learning style adaptation
-    const combinedSystemPrompt = `${baseSystemPrompt}
-
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-TEACHING STYLE ADAPTATION:
-${learningStyleModifier}
-
-Apply this teaching style to all your explanations while maintaining your educational role.
-━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
+    const combinedSystemPrompt = `${baseSystemPrompt}\n\n${learningStyleModifier}`
     
     // Start with enhanced system message
     const apiMessages = [{
@@ -132,11 +125,11 @@ Apply this teaching style to all your explanations while maintaining your educat
     console.log('Current learning style:', learningStyle)
     console.log('Learning style modifier:', learningStyleModifier)
 
-    // Add recent conversation history (last 10 messages to keep context manageable)
+    // Add recent conversation history (last 8 messages for faster response times)
     // Only include user and assistant messages, not system messages
     const recentMessages = messages
       .filter(msg => msg.role !== 'system')
-      .slice(-10)
+      .slice(-8)
       .map(msg => ({
         role: msg.role,
         content: msg.content
@@ -174,7 +167,7 @@ Apply this teaching style to all your explanations while maintaining your educat
 
       // Send to OpenAI
       const response = await sendOpenAIMessage(apiMessages, {
-        max_tokens: 800,
+        max_tokens: 600,
         temperature: 0.7,
         stream: false
       })

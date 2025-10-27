@@ -43,14 +43,31 @@ export async function sendMessage(messages, options = {}) {
       }
     }
 
-    // Make API call
-    const response = await openai.chat.completions.create({
-      model,
-      messages,
-      temperature,
-      max_tokens,
-      stream: false
-    })
+    // Create abort controller for timeout
+    const controller = new AbortController()
+    const timeoutId = setTimeout(() => controller.abort(), 15000) // 15 second timeout
+
+    let response
+    try {
+      // Make API call with timeout
+      response = await openai.chat.completions.create({
+        model,
+        messages,
+        temperature,
+        max_tokens,
+        stream: false
+      }, {
+        signal: controller.signal
+      })
+      
+      clearTimeout(timeoutId)
+    } catch (error) {
+      clearTimeout(timeoutId)
+      if (error.name === 'AbortError') {
+        throw new Error('Request timed out after 15 seconds')
+      }
+      throw error
+    }
 
     // Extract response content
     const content = response.choices[0]?.message?.content
