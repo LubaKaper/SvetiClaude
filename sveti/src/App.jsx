@@ -291,7 +291,7 @@ function App() {
           ) : (
             <>
               <div className="flex-1 overflow-hidden">
-                <MessageList messages={messages} isLoading={isLoading} />
+                <MessageList messages={messages} isLoading={isLoading} subject={subject} />
               </div>
               <div className="border-t border-gray-200 dark:border-slate-700">
                 <InputArea 
