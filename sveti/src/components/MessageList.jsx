@@ -153,7 +153,7 @@ function MessageList({ messages, isLoading, subject = 'algebra' }) {
         />
       ))}
       
-      {/* Typing indicator when loading */}
+      {/* Warm branded typing indicator when loading */}
       {isLoading && (
         <div className="flex justify-start mb-6 animate-fadeIn">
           <div className="max-w-[75%] sm:max-w-[80%] mr-auto">
@@ -162,10 +162,17 @@ function MessageList({ messages, isLoading, subject = 'algebra' }) {
                 <span className="text-xl flex-shrink-0 filter drop-shadow-sm" aria-hidden="true">
                   ✨
                 </span>
-                <div className="flex space-x-1" aria-label="AI is typing">
-                  <div className="w-3 h-3 bg-teal-500 rounded-full animate-bounce shadow-sm"></div>
-                  <div className="w-3 h-3 bg-teal-500 rounded-full animate-bounce shadow-sm" style={{animationDelay: '0.1s'}}></div>
-                  <div className="w-3 h-3 bg-teal-500 rounded-full animate-bounce shadow-sm" style={{animationDelay: '0.2s'}}></div>
+                <div className="flex flex-col gap-2">
+                  {/* Branded bouncing dots */}
+                  <div className="flex space-x-1" aria-label="Sveti is thinking">
+                    <div className="w-3 h-3 bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full animate-bounce shadow-sm"></div>
+                    <div className="w-3 h-3 bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full animate-bounce shadow-sm" style={{animationDelay: '150ms'}}></div>
+                    <div className="w-3 h-3 bg-gradient-to-r from-amber-400 to-yellow-300 rounded-full animate-bounce shadow-sm" style={{animationDelay: '300ms'}}></div>
+                  </div>
+                  {/* Branded text */}
+                  <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                    Sveti is thinking...
+                  </p>
                 </div>
               </div>
             </div>
