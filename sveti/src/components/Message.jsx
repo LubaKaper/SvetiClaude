@@ -1,14 +1,15 @@
 import PropTypes from 'prop-types'
 import { useMemo } from 'react'
+import ReactMarkdown from 'react-markdown'
 
 /**
- * Clean up LaTeX symbols and format text with paragraphs
+ * Clean up LaTeX symbols but preserve markdown formatting
  */
-function cleanAndFormatText(text) {
-  if (!text) return []
+function cleanLatexSymbols(text) {
+  if (!text) return ''
   
-  // Comprehensive LaTeX and markdown cleanup
-  let cleaned = text
+  // Only clean LaTeX symbols, preserve markdown
+  return text
     // Remove LaTeX delimiters
     .replace(/\\\[/g, '') // Remove \[
     .replace(/\\\]/g, '') // Remove \]
@@ -31,39 +32,15 @@ function cleanAndFormatText(text) {
     .replace(/\\sqrt\{\{([^}]+)\}\}/g, '√($1)')
     .replace(/\\sqrt\{([^}]+)\}/g, '√($1)')
     
-    // Clean up any remaining backslashes
+    // Clean up remaining LaTeX commands but preserve markdown
     .replace(/\\[a-zA-Z]+/g, '') // Remove other LaTeX commands
     .replace(/\\\\/g, '') // Remove double backslashes
     .replace(/\\(?![a-zA-Z])/g, '') // Remove single backslashes not followed by letters
-    
-    // Handle markdown - convert to simple formatting
-    .replace(/\*\*([^*]+)\*\*/g, '$1') // Remove ** bold markers for now
-    .replace(/\*([^*]+)\*/g, '$1') // Remove * italic markers
     
     // Clean up extra braces
     .replace(/\{\{/g, '') // Remove {{
     .replace(/\}\}/g, '') // Remove }}
     .replace(/\{([^}]*)\}/g, '$1') // Remove single braces but keep content
-  
-  // Create paragraph breaks - split on double newlines first
-  let paragraphs = cleaned.split(/\n\s*\n/)
-  
-  // If no natural paragraph breaks, create them intelligently
-  if (paragraphs.length <= 1) {
-    // Split on numbered lists or step patterns
-    paragraphs = cleaned.split(/(?=\d+\.\s|\*\*|[A-Z][^.]*:)/)
-    
-    // If still one big chunk, split on sentences ending with period + space + capital
-    if (paragraphs.length <= 1) {
-      paragraphs = cleaned.split(/(?<=[.!?])\s+(?=[A-Z])/)
-    }
-  }
-  
-  // Clean and filter paragraphs
-  return paragraphs
-    .map(p => p.replace(/\n/g, ' ').trim()) // Convert newlines to spaces, trim
-    .filter(p => p.length > 10) // Only keep paragraphs with substance
-    .map(p => p.replace(/\s+/g, ' ')) // Normalize whitespace
 }
 
 /**
@@ -91,12 +68,20 @@ function Message({ role, content, timestamp }) {
       <div className="flex justify-end mb-6 animate-fadeIn">
         <div className="max-w-[75%] sm:max-w-[80%] ml-auto">
           <div className="bg-gradient-to-br from-teal-500 to-cyan-600 text-white px-6 py-4 rounded-3xl shadow-lg transition-all duration-300 ease-in-out hover:shadow-xl transform hover:-translate-y-0.5">
-            <div className="leading-relaxed break-words text-base font-medium">
-              {cleanAndFormatText(content).map((paragraph, index) => (
-                <p key={index} className="mb-3 last:mb-0">
-                  {paragraph}
-                </p>
-              ))}
+            <div className="leading-relaxed break-words text-base font-medium prose prose-invert max-w-none">
+              <ReactMarkdown
+                components={{
+                  h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-3 mt-4 text-white" {...props} />,
+                  h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 mt-3 text-white" {...props} />,
+                  h3: ({node, ...props}) => <h3 className="text-base font-semibold mb-2 mt-2 text-white" {...props} />,
+                  h4: ({node, ...props}) => <h4 className="text-sm font-semibold mb-1 mt-2 text-white" {...props} />,
+                  p: ({node, ...props}) => <p className="mb-3 last:mb-0" {...props} />,
+                  strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                  em: ({node, ...props}) => <em className="italic" {...props} />
+                }}
+              >
+                {cleanLatexSymbols(content)}
+              </ReactMarkdown>
             </div>
           </div>
           <div className="text-right mt-2 mr-3">
@@ -119,12 +104,27 @@ function Message({ role, content, timestamp }) {
               ✨
             </span>
             <div className="flex-1">
-              <div className="leading-relaxed break-words text-base">
-                {cleanAndFormatText(content).map((paragraph, index) => (
-                  <p key={index} className="mb-3 last:mb-0">
-                    {paragraph}
-                  </p>
-                ))}
+              <div className="leading-relaxed break-words text-base prose dark:prose-invert max-w-none">
+                <ReactMarkdown
+                  components={{
+                    h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-3 mt-4 text-slate-800 dark:text-slate-100" {...props} />,
+                    h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 mt-3 text-slate-800 dark:text-slate-100" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-base font-semibold mb-2 mt-2 text-slate-800 dark:text-slate-100" {...props} />,
+                    h4: ({node, ...props}) => <h4 className="text-sm font-semibold mb-1 mt-2 text-slate-800 dark:text-slate-100" {...props} />,
+                    p: ({node, ...props}) => <p className="mb-3 last:mb-0" {...props} />,
+                    strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
+                    em: ({node, ...props}) => <em className="italic" {...props} />,
+                    ul: ({node, ...props}) => <ul className="list-disc ml-4 mb-3" {...props} />,
+                    ol: ({node, ...props}) => <ol className="list-decimal ml-4 mb-3" {...props} />,
+                    li: ({node, ...props}) => <li className="mb-1" {...props} />,
+                    code: ({node, inline, ...props}) => 
+                      inline 
+                        ? <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-sm font-mono" {...props} />
+                        : <code className="block bg-slate-100 dark:bg-slate-700 p-3 rounded text-sm font-mono overflow-x-auto mb-3" {...props} />
+                  }}
+                >
+                  {cleanLatexSymbols(content)}
+                </ReactMarkdown>
               </div>
             </div>
           </div>

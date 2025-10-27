@@ -15,7 +15,7 @@ const openai = new OpenAI({
  * @param {Object} options - Optional configuration
  * @param {string} options.model - OpenAI model to use (default: 'gpt-4o-mini')
  * @param {number} options.temperature - Response creativity (0-2, default: 0.7)
- * @param {number} options.max_tokens - Maximum response length (default: 500)
+ * @param {number} options.max_tokens - Maximum response length (default: 1500)
  * @returns {Promise<{content: string, error: null} | {content: null, error: string}>}
  */
 export async function sendMessage(messages, options = {}) {
@@ -23,7 +23,7 @@ export async function sendMessage(messages, options = {}) {
   const {
     model = 'gpt-4o-mini',
     temperature = 0.7,
-    max_tokens = 500
+    max_tokens = 1500
   } = options
 
   try {
