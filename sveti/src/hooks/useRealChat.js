@@ -1,15 +1,17 @@
 import { useState, useEffect, useCallback } from 'react'
 import { sendMessage as sendOpenAIMessage } from '../utils/openai.js'
 import { getSystemPrompt } from '../config/prompts.js'
+import { getLearningStylePrompt } from '../config/learningStyles'
 
 /**
  * Custom React hook for real-time AI chat using OpenAI API
  * Provides educational tutoring with conversation context and persistence
  * 
  * @param {string} subject - The subject to tutor ('algebra' or 'ela')
+ * @param {string} learningStyle - The learning style preference ('visual', 'reading', 'examples', 'socratic', 'analogies')
  * @returns {Object} Chat interface with messages, loading state, and functions
  */
-export function useRealChat(subject = 'algebra') {
+export function useRealChat(subject = 'algebra', learningStyle = 'visual') {
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
 
@@ -106,14 +108,29 @@ export function useRealChat(subject = 'algebra') {
    * @returns {Array} Array of messages for OpenAI API
    */
   const buildAPIMessages = useCallback((newContent, actionType = null) => {
-    // Get the appropriate system prompt
-    const systemPrompt = getSystemPrompt(subject, actionType)
+    // Get the base system prompt and learning style adaptation
+    const baseSystemPrompt = getSystemPrompt(subject, actionType)
+    const learningStyleModifier = getLearningStylePrompt(learningStyle)
+
+    // Combine base prompt with learning style adaptation
+    const combinedSystemPrompt = `${baseSystemPrompt}
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TEACHING STYLE ADAPTATION:
+${learningStyleModifier}
+
+Apply this teaching style to all your explanations while maintaining your educational role.
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━`
     
-    // Start with system message
+    // Start with enhanced system message
     const apiMessages = [{
       role: 'system',
-      content: systemPrompt
+      content: combinedSystemPrompt
     }]
+
+    // Debug logging
+    console.log('Current learning style:', learningStyle)
+    console.log('Learning style modifier:', learningStyleModifier)
 
     // Add recent conversation history (last 10 messages to keep context manageable)
     // Only include user and assistant messages, not system messages
@@ -134,7 +151,7 @@ export function useRealChat(subject = 'algebra') {
     })
 
     return apiMessages
-  }, [messages, subject])
+  }, [messages, subject, learningStyle])
 
   /**
    * Send a message to the AI and handle the response

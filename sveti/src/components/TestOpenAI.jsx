@@ -1,157 +1,161 @@
 import { useState } from 'react'
-import { quickTest, runAllTests, testConnection, testAlgebraTutoring, testELATutoring } from '../utils/testOpenAI.js'
 
-export default function TestOpenAI() {
-  const [isRunning, setIsRunning] = useState(false)
-  const [results, setResults] = useState(null)
+function TestOpenAI() {
+  const [testResult, setTestResult] = useState('')
+  const [isLoading, setIsLoading] = useState(false)
 
-  const handleQuickTest = async () => {
-    setIsRunning(true)
-    setResults(null)
+  const runTest = async (testType) => {
+    setIsLoading(true)
+    setTestResult(`Running ${testType} test...`)
     
-    console.log('Running quick test...')
-    const success = await quickTest()
-    
-    setResults({
-      type: 'quick',
-      success,
-      message: success ? 'Quick test passed!' : 'Quick test failed!'
-    })
-    setIsRunning(false)
-  }
+    try {
+      const { sendMessage } = await import('../utils/openai')
+      
+      let messages = []
+      
+      switch (testType) {
+        case 'connection':
+          messages = [
+            { role: 'system', content: 'You are a helpful assistant. Respond with just "API connection successful!"' },
+            { role: 'user', content: 'Test connection' }
+          ]
+          break
+          
+        case 'math':
+          messages = [
+            { role: 'system', content: 'You are a friendly math tutor.' },
+            { role: 'user', content: 'What is 2 + 2? Explain briefly.' }
+          ]
+          break
+          
+        case 'algebra':
+          messages = [
+            { role: 'system', content: 'You are Sveti, a patient algebra tutor.' },
+            { role: 'user', content: 'Explain what algebra is in simple terms.' }
+          ]
+          break
+          
+        case 'english':
+          messages = [
+            { role: 'system', content: 'You are a helpful English writing tutor.' },
+            { role: 'user', content: 'Help me write a good opening sentence.' }
+          ]
+          break
+          
+        case 'visual':
+          messages = [
+            { role: 'system', content: 'Use a VISUAL learning approach: Create clear step-by-step numbered layouts. Use structured formatting.' },
+            { role: 'user', content: 'Explain fractions using visual learning style.' }
+          ]
+          break
+          
+        default:
+          messages = [
+            { role: 'system', content: 'You are a helpful assistant.' },
+            { role: 'user', content: 'Say hello!' }
+          ]
+      }
 
-  const handleFullTests = async () => {
-    setIsRunning(true)
-    setResults(null)
-    
-    console.log('Running all tests...')
-    const { overallSuccess, results: testResults } = await runAllTests()
-    
-    setResults({
-      type: 'full',
-      overallSuccess,
-      results: testResults
-    })
-    setIsRunning(false)
-  }
+      const response = await sendMessage(messages)
 
-  const handleIndividualTest = async (testName) => {
-    setIsRunning(true)
-    setResults(null)
-    
-    console.log(`Running ${testName} test...`)
-    
-    let testFunction
-    switch (testName) {
-      case 'connection':
-        testFunction = testConnection
-        break
-      case 'algebra':
-        testFunction = testAlgebraTutoring
-        break
-      case 'ela':
-        testFunction = testELATutoring
-        break
-      default:
-        return
+      if (response.error) {
+        setTestResult(`❌ ${testType.toUpperCase()} TEST FAILED:\n${response.error}`)
+      } else {
+        setTestResult(`✅ ${testType.toUpperCase()} TEST SUCCESS:\n${response.content}`)
+      }
+    } catch (error) {
+      setTestResult(`❌ ${testType.toUpperCase()} TEST ERROR:\n${error.message}`)
+    } finally {
+      setIsLoading(false)
     }
-    
-    const result = await testFunction()
-    
-    setResults({
-      type: 'individual',
-      testName,
-      ...result
-    })
-    setIsRunning(false)
   }
 
   return (
-    <div className="p-6 max-w-2xl mx-auto">
-      <h1 className="text-2xl font-bold mb-6">OpenAI API Tests</h1>
-      
-      <div className="space-y-4 mb-6">
-        <button
-          onClick={handleQuickTest}
-          disabled={isRunning}
-          className="w-full px-4 py-2 bg-teal-600 text-white rounded hover:bg-teal-700 disabled:opacity-50"
-        >
-          {isRunning ? 'Running...' : 'Quick Test'}
-        </button>
+    <div className="p-6 h-full overflow-y-auto">
+      <div className="max-w-4xl mx-auto">
+        <h2 className="text-2xl font-bold mb-6">🧪 OpenAI API Test Suite</h2>
         
-        <button
-          onClick={handleFullTests}
-          disabled={isRunning}
-          className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50"
-        >
-          {isRunning ? 'Running...' : 'Run All Tests'}
-        </button>
-        
-        <div className="grid grid-cols-3 gap-2">
-          <button
-            onClick={() => handleIndividualTest('connection')}
-            disabled={isRunning}
-            className="px-3 py-2 bg-green-600 text-white rounded hover:bg-green-700 disabled:opacity-50 text-sm"
-          >
-            Connection
-          </button>
-          <button
-            onClick={() => handleIndividualTest('algebra')}
-            disabled={isRunning}
-            className="px-3 py-2 bg-purple-600 text-white rounded hover:bg-purple-700 disabled:opacity-50 text-sm"
-          >
-            Algebra
-          </button>
-          <button
-            onClick={() => handleIndividualTest('ela')}
-            disabled={isRunning}
-            className="px-3 py-2 bg-orange-600 text-white rounded hover:bg-orange-700 disabled:opacity-50 text-sm"
-          >
-            ELA
-          </button>
+        {/* API Status */}
+        <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800 rounded-lg">
+          <div className="flex items-center gap-2">
+            <div className={`w-3 h-3 rounded-full ${import.meta.env.VITE_OPENAI_API_KEY ? 'bg-green-500' : 'bg-red-500'}`}></div>
+            <span className="font-medium">
+              API Key: {import.meta.env.VITE_OPENAI_API_KEY ? 'Configured ✅' : 'Missing ❌'}
+            </span>
+          </div>
         </div>
-      </div>
 
-      {results && (
-        <div className="mt-6 p-4 border rounded-lg">
-          <h2 className="font-semibold mb-2">Test Results:</h2>
+        {/* Test Buttons */}
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 mb-6">
+          <button
+            onClick={() => runTest('connection')}
+            disabled={isLoading}
+            className="px-4 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 disabled:opacity-50 font-medium"
+          >
+            🔗 Connection Test
+          </button>
           
-          {results.type === 'quick' && (
-            <div className={`p-2 rounded ${results.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {results.success ? '✅' : '❌'} {results.message}
-            </div>
-          )}
+          <button
+            onClick={() => runTest('math')}
+            disabled={isLoading}
+            className="px-4 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 disabled:opacity-50 font-medium"
+          >
+            🧮 Math Test
+          </button>
           
-          {results.type === 'individual' && (
-            <div className={`p-2 rounded ${results.success ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-              {results.success ? '✅' : '❌'} {results.testName}: {results.message}
-              {results.response && (
-                <div className="mt-2 text-sm">
-                  <strong>Response:</strong> {results.response.substring(0, 200)}...
-                </div>
-              )}
-            </div>
-          )}
+          <button
+            onClick={() => runTest('algebra')}
+            disabled={isLoading}
+            className="px-4 py-3 bg-purple-500 text-white rounded-lg hover:bg-purple-600 disabled:opacity-50 font-medium"
+          >
+            📐 Algebra Test
+          </button>
           
-          {results.type === 'full' && (
-            <div className="space-y-2">
-              <div className={`p-2 rounded font-semibold ${results.overallSuccess ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
-                {results.overallSuccess ? '✅ All tests passed!' : '❌ Some tests failed'}
-              </div>
-              
-              {results.results.map((result, index) => (
-                <div key={index} className={`p-2 rounded text-sm ${result.success ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
-                  {result.success ? '✅' : '❌'} {result.name}: {result.message}
-                </div>
-              ))}
-            </div>
-          )}
+          <button
+            onClick={() => runTest('english')}
+            disabled={isLoading}
+            className="px-4 py-3 bg-indigo-500 text-white rounded-lg hover:bg-indigo-600 disabled:opacity-50 font-medium"
+          >
+            ✍️ English Test
+          </button>
+          
+          <button
+            onClick={() => runTest('visual')}
+            disabled={isLoading}
+            className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 font-medium"
+          >
+            👁️ Visual Learning Test
+          </button>
+          
+          <button
+            onClick={() => setTestResult('')}
+            disabled={isLoading}
+            className="px-4 py-3 bg-gray-500 text-white rounded-lg hover:bg-gray-600 disabled:opacity-50 font-medium"
+          >
+            🗑️ Clear Results
+          </button>
         </div>
-      )}
-      
-      <div className="mt-6 text-sm text-gray-600">
-        <p><strong>Note:</strong> Check the browser console (F12) for detailed test output and logs.</p>
+
+        {/* Loading */}
+        {isLoading && (
+          <div className="mb-4 flex items-center gap-3 text-blue-600">
+            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-blue-600"></div>
+            <span>Testing OpenAI API...</span>
+          </div>
+        )}
+        
+        {/* Results */}
+        {testResult && (
+          <div className="bg-gray-100 dark:bg-gray-800 rounded-lg p-4">
+            <h3 className="font-bold mb-2">Test Results:</h3>
+            <pre className="whitespace-pre-wrap text-sm font-mono overflow-x-auto">
+              {testResult}
+            </pre>
+          </div>
+        )}
       </div>
     </div>
   )
 }
+
+export default TestOpenAI

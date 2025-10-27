@@ -13,17 +13,17 @@ function InputArea({ onSendMessage, isLoading, subject }) {
   const getActionChips = () => {
     if (subject === 'algebra') {
       return [
-        { emoji: '📝', text: 'Explain Simply', prompt: 'Please explain this concept in simple terms: ', actionType: 'explain' },
-        { emoji: '👣', text: 'Show Steps', prompt: 'Please show me the step-by-step solution for: ', actionType: 'steps' },
-        { emoji: '💪', text: 'Practice', prompt: 'Can you give me practice problems for: ', actionType: 'practice' },
-        { emoji: '✅', text: 'Check Work', prompt: 'Please check my work on this problem: ', actionType: 'check' }
+        { text: 'Explain Simply', prompt: 'Please explain this concept in simple terms: ', actionType: 'explain' },
+        { text: 'Show Steps', prompt: 'Please show me the step-by-step solution for: ', actionType: 'steps' },
+        { text: 'Practice', prompt: 'Can you give me practice problems for: ', actionType: 'practice' },
+        { text: 'Check Work', prompt: 'Please check my work on this problem: ', actionType: 'check' }
       ]
     } else { // ELA
       return [
-        { emoji: '💡', text: 'Brainstorm', prompt: 'Help me brainstorm ideas for: ', actionType: 'brainstorm' },
-        { emoji: '📋', text: 'Outline', prompt: 'Help me create an outline for: ', actionType: 'outline' },
-        { emoji: '✍️', text: 'Improve', prompt: 'Please help me improve this writing: ', actionType: 'improve' },
-        { emoji: '✓', text: 'Grammar', prompt: 'Please check the grammar in this text: ', actionType: 'grammar' }
+        { text: 'Brainstorm', prompt: 'Help me brainstorm ideas for: ', actionType: 'brainstorm' },
+        { text: 'Outline', prompt: 'Help me create an outline for: ', actionType: 'outline' },
+        { text: 'Improve', prompt: 'Please help me improve this writing: ', actionType: 'improve' },
+        { text: 'Grammar', prompt: 'Please check the grammar in this text: ', actionType: 'grammar' }
       ]
     }
   }
@@ -76,17 +76,16 @@ function InputArea({ onSendMessage, isLoading, subject }) {
     <div className="border-t border-stone-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm shadow-lg">
       {/* Action Chips Row */}
       <div className="p-6 pb-4">
-        <div className="flex gap-3 overflow-x-auto scrollbar-thin">
+        <div className="flex gap-2 overflow-x-auto scrollbar-thin">
           {getActionChips().map((chip, index) => (
             <button
               key={index}
               onClick={() => handleChipClick(chip.prompt, chip.actionType)}
               disabled={isLoading}
-              className="flex items-center gap-2 px-5 py-2.5 bg-stone-200 dark:bg-slate-700 text-slate-600 dark:text-slate-300 rounded-full text-base font-medium whitespace-nowrap transition-all duration-300 ease-in-out hover:shadow-md hover:-translate-y-1 hover:bg-teal-100 hover:text-teal-700 dark:hover:bg-teal-900/30 dark:hover:text-teal-300 focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:translate-y-0 transform min-h-[44px]"
+              className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-md text-sm font-medium whitespace-nowrap transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-gray-100 focus:outline-none focus:ring-2 focus:ring-gray-400 disabled:opacity-50 disabled:cursor-not-allowed min-h-[36px]"
               aria-label={`Use prompt: ${chip.text}`}
             >
-              <span className="text-lg">{chip.emoji}</span>
-              <span>{chip.text}</span>
+              {chip.text}
             </button>
           ))}
         </div>
@@ -105,7 +104,7 @@ function InputArea({ onSendMessage, isLoading, subject }) {
               value={inputValue}
               onChange={handleInputChange}
               onKeyPress={handleKeyPress}
-              placeholder={subject === 'algebra' ? 'Ask me anything about Algebra - I\'m here to help! 📐' : 'Ask me anything about English - I\'m here to help! 📝'}
+              placeholder={subject === 'algebra' ? 'Ask me anything about Algebra - I\'m here to help!' : 'Ask me anything about English - I\'m here to help!'}
               rows={1}
               className="w-full resize-none rounded-2xl bg-stone-100 dark:bg-slate-700 border-2 border-stone-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 px-5 py-4 text-base leading-relaxed focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all duration-300 ease-in-out scrollbar-thin placeholder-slate-500 dark:placeholder-slate-400"
               style={{ minHeight: '56px', maxHeight: '112px' }}
@@ -122,8 +121,8 @@ function InputArea({ onSendMessage, isLoading, subject }) {
             className="flex items-center justify-center px-8 py-4 bg-teal-500 hover:bg-teal-600 disabled:bg-slate-400 text-white rounded-2xl font-medium text-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:cursor-not-allowed transform hover:scale-105 hover:shadow-lg shadow-md min-h-[56px] min-w-[56px]"
             aria-label={isLoading ? 'Message is being sent' : 'Send message'}
           >
-            <span className="text-xl">
-              {isLoading ? '⏳' : '➤'}
+            <span className="text-sm font-medium">
+              {isLoading ? 'Sending...' : 'Send'}
             </span>
           </button>
         </form>
