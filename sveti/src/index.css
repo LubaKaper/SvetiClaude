@@ -41,7 +41,7 @@
   }
   
   body {
-    @apply antialiased text-base bg-stone-50 text-slate-800 dark:bg-slate-900 dark:text-slate-100;
+    @apply antialiased text-base bg-stone-50 text-gray-800 dark:bg-gray-800 dark:text-gray-100;
     transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
   }
   
@@ -59,7 +59,7 @@
   
   /* Enhanced focus for accessibility */
   *:focus-visible {
-    @apply outline-none ring-4 ring-teal-500/20 ring-offset-2 ring-offset-stone-50 dark:ring-offset-slate-900;
+    @apply outline-none ring-4 ring-teal-500/20 ring-offset-2 ring-offset-stone-50 dark:ring-offset-gray-800;
     transition: box-shadow 0.2s ease-in-out;
   }
   
@@ -183,4 +183,19 @@
 
 .animate-glow-pulse {
   animation: glow-pulse 3s ease-in-out infinite;
+}
+
+@keyframes beam-flow {
+  0%, 100% { 
+    transform: translateX(0px) scaleX(1);
+    opacity: 0.4;
+  }
+  50% { 
+    transform: translateX(-30px) scaleX(1.02);
+    opacity: 0.7;
+  }
+}
+
+.animate-beam {
+  animation: beam-flow 8s ease-in-out infinite;
 }

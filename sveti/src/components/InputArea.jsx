@@ -73,7 +73,7 @@ function InputArea({ onSendMessage, isLoading, subject }) {
   }
 
   return (
-    <div className="border-t border-stone-200 dark:border-slate-700 bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm shadow-lg">
+    <div className="border-t border-stone-200 dark:border-gray-600 bg-white/95 dark:bg-gray-700/95 backdrop-blur-sm shadow-lg">
       {/* Action Chips Row */}
       <div className="p-6 pb-4">
         <div className="flex gap-2 overflow-x-auto scrollbar-thin">
@@ -106,7 +106,7 @@ function InputArea({ onSendMessage, isLoading, subject }) {
               onKeyPress={handleKeyPress}
               placeholder={subject === 'algebra' ? 'Ask me anything about Algebra - I\'m here to help!' : 'Ask me anything about English - I\'m here to help!'}
               rows={1}
-              className="w-full resize-none rounded-2xl bg-stone-100 dark:bg-slate-700 border-2 border-stone-300 dark:border-slate-600 text-slate-800 dark:text-slate-100 px-5 py-4 text-base leading-relaxed focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all duration-300 ease-in-out scrollbar-thin placeholder-slate-500 dark:placeholder-slate-400"
+              className="w-full resize-none rounded-2xl bg-stone-100 dark:bg-gray-600 border-2 border-stone-300 dark:border-gray-500 text-gray-800 dark:text-gray-100 px-5 py-4 text-base leading-relaxed focus:outline-none focus:border-teal-500 focus:ring-4 focus:ring-teal-500/20 transition-all duration-300 ease-in-out scrollbar-thin placeholder-gray-500 dark:placeholder-gray-400"
               style={{ minHeight: '56px', maxHeight: '112px' }}
               disabled={isLoading}
               aria-describedby="message-input-help"
@@ -118,7 +118,7 @@ function InputArea({ onSendMessage, isLoading, subject }) {
           <button
             type="submit"
             disabled={!inputValue.trim() || isLoading}
-            className="flex items-center justify-center px-8 py-4 bg-teal-500 hover:bg-teal-600 disabled:bg-slate-400 text-white rounded-2xl font-medium text-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:cursor-not-allowed transform hover:scale-105 hover:shadow-lg shadow-md min-h-[56px] min-w-[56px]"
+            className="flex items-center justify-center px-8 py-4 bg-teal-500 hover:bg-teal-600 disabled:bg-gray-400 text-white rounded-2xl font-medium text-lg transition-all duration-300 ease-in-out focus:outline-none focus:ring-4 focus:ring-teal-500/20 disabled:cursor-not-allowed transform hover:scale-105 hover:shadow-lg shadow-md min-h-[56px] min-w-[56px]"
             aria-label={isLoading ? 'Message is being sent' : 'Send message'}
           >
             <span className="text-sm font-medium">

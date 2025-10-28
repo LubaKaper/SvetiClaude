@@ -85,7 +85,7 @@ function Message({ role, content, timestamp }) {
             </div>
           </div>
           <div className="text-right mt-2 mr-3">
-            <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+            <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
               {formattedTime}
             </span>
           </div>
@@ -98,7 +98,7 @@ function Message({ role, content, timestamp }) {
   return (
     <div className="flex justify-start mb-6 animate-fadeIn">
       <div className="max-w-[75%] sm:max-w-[80%] mr-auto">
-        <div className="bg-white/95 dark:bg-slate-800/95 backdrop-blur-sm text-slate-800 dark:text-slate-100 border border-stone-200 dark:border-slate-700 px-6 py-4 rounded-3xl shadow-md transition-all duration-300 ease-in-out hover:shadow-lg transform hover:-translate-y-0.5">
+        <div className="bg-white/95 dark:bg-gray-700/95 backdrop-blur-sm text-gray-800 dark:text-gray-100 border border-stone-200 dark:border-gray-600 px-6 py-4 rounded-3xl shadow-md transition-all duration-300 ease-in-out hover:shadow-lg transform hover:-translate-y-0.5">
           <div className="flex items-start gap-3">
             <span className="text-xl mt-1 flex-shrink-0 filter drop-shadow-sm" aria-hidden="true">
               ✨
@@ -107,10 +107,10 @@ function Message({ role, content, timestamp }) {
               <div className="leading-relaxed break-words text-base prose dark:prose-invert max-w-none">
                 <ReactMarkdown
                   components={{
-                    h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-3 mt-4 text-slate-800 dark:text-slate-100" {...props} />,
-                    h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 mt-3 text-slate-800 dark:text-slate-100" {...props} />,
-                    h3: ({node, ...props}) => <h3 className="text-base font-semibold mb-2 mt-2 text-slate-800 dark:text-slate-100" {...props} />,
-                    h4: ({node, ...props}) => <h4 className="text-sm font-semibold mb-1 mt-2 text-slate-800 dark:text-slate-100" {...props} />,
+                    h1: ({node, ...props}) => <h1 className="text-xl font-bold mb-3 mt-4 text-gray-800 dark:text-gray-100" {...props} />,
+                    h2: ({node, ...props}) => <h2 className="text-lg font-bold mb-2 mt-3 text-gray-800 dark:text-gray-100" {...props} />,
+                    h3: ({node, ...props}) => <h3 className="text-base font-semibold mb-2 mt-2 text-gray-800 dark:text-gray-100" {...props} />,
+                    h4: ({node, ...props}) => <h4 className="text-sm font-semibold mb-1 mt-2 text-gray-800 dark:text-gray-100" {...props} />,
                     p: ({node, ...props}) => <p className="mb-3 last:mb-0" {...props} />,
                     strong: ({node, ...props}) => <strong className="font-bold" {...props} />,
                     em: ({node, ...props}) => <em className="italic" {...props} />,
@@ -119,8 +119,8 @@ function Message({ role, content, timestamp }) {
                     li: ({node, ...props}) => <li className="mb-1" {...props} />,
                     code: ({node, inline, ...props}) => 
                       inline 
-                        ? <code className="bg-slate-100 dark:bg-slate-700 px-1 py-0.5 rounded text-sm font-mono" {...props} />
-                        : <code className="block bg-slate-100 dark:bg-slate-700 p-3 rounded text-sm font-mono overflow-x-auto mb-3" {...props} />
+                        ? <code className="bg-gray-100 dark:bg-gray-600 px-1 py-0.5 rounded text-sm font-mono" {...props} />
+                        : <code className="block bg-gray-100 dark:bg-gray-600 p-3 rounded text-sm font-mono overflow-x-auto mb-3" {...props} />
                   }}
                 >
                   {cleanLatexSymbols(content)}
@@ -130,7 +130,7 @@ function Message({ role, content, timestamp }) {
           </div>
         </div>
         <div className="text-left mt-2 ml-10">
-          <span className="text-sm text-slate-500 dark:text-slate-400 font-medium">
+          <span className="text-sm text-gray-500 dark:text-gray-400 font-medium">
             {formattedTime}
           </span>
         </div>
