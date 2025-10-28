@@ -55,7 +55,9 @@ function Message({ role, content, timestamp }) {
   
   // Format timestamp to readable format (e.g., "2:45 PM")
   const formattedTime = useMemo(() => {
-    return timestamp.toLocaleTimeString('en-US', {
+    // Ensure timestamp is a Date object
+    const date = timestamp instanceof Date ? timestamp : new Date(timestamp)
+    return date.toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
       hour12: true

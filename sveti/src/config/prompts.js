@@ -1,3 +1,5 @@
+import { GAME_TEMPLATES, pickGameForContext } from "./gameTemplates";
+
 /**
  * System prompts for educational AI tutoring
  * Designed to make AI act as a patient, encouraging tutor rather than just answering questions
@@ -142,4 +144,33 @@ export function getAvailableActions(subject) {
 export function isValidAction(subject, actionType) {
   const subjectPrompts = systemPrompts[subject]
   return !!(subjectPrompts && subjectPrompts.actions[actionType])
+}
+
+export function buildSystemWithGames(baseSystem, learningStyleBlock, gamePrefs = [], topicKey = null) {
+  const game = pickGameForContext(gamePrefs);
+  const gameBlock = game
+    ? `
+[Personalization]
+Student likes the video game(s): ${gamePrefs.join(", ")}.
+When you generate practice problems or worked examples, frame the context using ${game} when it helps understanding.
+Keep the math objective identical; only change the story wrapper.
+Never give final answers immediately—stay in tutor mode.
+`
+    : `
+[Personalization]
+No game preference known or student opted out. Use neutral, age-appropriate contexts.
+Never give final answers immediately—stay in tutor mode.
+`;
+
+  const templateHint = game && topicKey && GAME_TEMPLATES[topicKey]
+    ? `\n[Context Template Hint]\n${GAME_TEMPLATES[topicKey](game)}\n`
+    : "";
+
+  const noEchoRule = `
+[Style Rules]
+- Do NOT repeat or quote the student's message.
+- Give clear, structured explanations.
+- Stay in tutor mode: guide with questions before revealing answers.`;
+
+  return `${baseSystem}\n${learningStyleBlock}\n${gameBlock}${templateHint}${noEchoRule}`;
 }

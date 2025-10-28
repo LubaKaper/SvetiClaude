@@ -3,12 +3,17 @@ import { learningStyles, getAllStyles } from './config/learningStyles'
 import MessageList from './components/MessageList'
 import InputArea from './components/InputArea'
 import TestOpenAI from './components/TestOpenAI'
+import { useGamePrefs } from './hooks/useGamePrefs'
+import { buildSystemWithGames } from './config/prompts'
 import './index.css'
 
 // Fixed useRealChat hook that handles OpenAI errors gracefully
 function useRealChatFixed(subject = 'algebra', learningStyle = 'visual') {
   const [messages, setMessages] = useState([])
   const [isLoading, setIsLoading] = useState(false)
+
+  // Game preferences hook
+  const { gamePrefs, setGamePrefs, asked, setAsked, prefersGames, setPrefers, parseGamesFromText, hasPrefs, resetGamePrefs } = useGamePrefs();
 
   // Storage key for persistence
   const getStorageKey = useCallback((subj) => `sveti-messages-${subj}`, [])
@@ -54,16 +59,75 @@ function useRealChatFixed(subject = 'algebra', learningStyle = 'visual') {
   const sendMessage = useCallback(async (content, actionType = null) => {
     if (!content?.trim() || isLoading) return
 
-    const userMsg = {
-      id: Date.now().toString(),
-      role: 'user',
-      content: content.trim(),
-      timestamp: new Date(),
-      actionType: actionType || 'general'
+    // 🎮 DEBUG: Game Ask Trigger
+    console.groupCollapsed("🎮 Game Ask Check");
+    console.log("Messages length BEFORE adding new one:", messages?.length);
+    console.log("Asked:", asked, "HasPrefs:", hasPrefs, "GamePrefs:", gamePrefs);
+    console.groupEnd();
+
+    const newUserMsg = { id: crypto.randomUUID(), role: "user", content: content.trim(), timestamp: new Date() };
+    const nextMessages = [...messages, newUserMsg];
+    setMessages(nextMessages);
+
+    // Count only USER messages to determine when to ask about games
+    const userMessageCount = nextMessages.filter(msg => msg.role === 'user').length;
+    console.log("🧮 userMessageCount:", userMessageCount, "totalCount:", nextMessages.length);
+
+    if (!asked && !hasPrefs && userMessageCount >= 3) {
+      const askMsg = {
+        id: crypto.randomUUID(),
+        role: "assistant",
+        content: "Quick check: are you into any video games? If yes, name one or two. If not, just say 'no'.",
+        timestamp: new Date(),
+      };
+      // small natural pause before asking about games
+      setTimeout(() => {
+        setMessages(prev => [...prev, askMsg]);
+      }, 1500); // 1.5 second delay
+      setAsked(true);
+      console.warn("🎮 Injected game question and returning early.");
+      return; // stop before OpenAI call
     }
 
-    // Add user message immediately
-    setMessages(prev => [...prev, userMsg])
+    // Handle games reply locally so we don't send it to the model
+    if (asked && !hasPrefs) {
+      const parsed = parseGamesFromText(newUserMsg.content || "");
+      console.log("📝 Parsing games from:", newUserMsg.content);
+      if (parsed.length > 0) {
+        setGamePrefs(parsed.slice(0, 2));
+        setPrefers(true);
+        console.log("✅ Saved gamePrefs:", parsed.slice(0, 2));
+        const cleanGames = parsed.map(g => g.replace(/i'?m|into|right now|playing/gi, "").trim()).filter(Boolean);
+        const gamesToShow = cleanGames.length ? cleanGames.join(", ") : parsed.join(", ");
+        
+        // short delay before responding naturally
+        setTimeout(() => {
+          setMessages(prev => [...prev, {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            timestamp: new Date(),
+            content: `Got it — I'll use ${gamesToShow} for examples. Want to try a practice problem?`,
+          }]);
+        }, 2000); // 2 second delay
+        setIsLoading(false);
+        return;
+      } else {
+        setPrefers(false);
+        console.log("ℹ️ No valid game names found — user opted out.");
+        // short delay before responding naturally
+        setTimeout(() => {
+          setMessages(prev => [...prev, {
+            id: crypto.randomUUID(),
+            role: "assistant",
+            timestamp: new Date(),
+            content: "No problem — I'll stick to neutral examples. Want a practice problem?"
+          }]);
+        }, 2000); // 2 second delay
+        setIsLoading(false);
+        return;
+      }
+    }
+
     setIsLoading(true)
 
     try {
@@ -79,19 +143,38 @@ function useRealChatFixed(subject = 'algebra', learningStyle = 'visual') {
         const getSystemPrompt = promptsModule.getSystemPrompt
         const getLearningStylePrompt = stylesModule.getLearningStylePrompt
         
-        // Build system prompt
+        // --- quick topic detector for Sveti MVP ---
+        // detect math topic from the student's latest message
+        let topicKey = null;
+        const userText = (nextMessages?.at(-1)?.content || "").toLowerCase();
+        if (userText.includes("%") || userText.includes("percent") || userText.includes("discount"))
+          topicKey = "percentChange";
+        else if (userText.includes("ratio") || userText.includes("proportion"))
+          topicKey = "ratios";
+        else if (userText.includes("linear") || userText.includes("slope") || userText.includes("y="))
+          topicKey = "linearEq";
+
+        // Build system prompt with game context
         const basePrompt = getSystemPrompt(subject, actionType)
         const stylePrompt = getLearningStylePrompt(learningStyle)
-        const systemPrompt = `${basePrompt}\n\nTEACHING STYLE:\n${stylePrompt}`
+        const baseSystemPrompt = `${basePrompt}\n\nTEACHING STYLE:\n${stylePrompt}`
+        
+        // build final system prompt with optional game context + topic hint
+        const systemContent = buildSystemWithGames(
+          baseSystemPrompt,
+          stylePrompt,
+          gamePrefs,
+          topicKey
+        );
+        console.log("🧩 System prompt preview (first 300 chars):", systemContent.slice(0, 300));
         
         // Build API messages
         const apiMessages = [
-          { role: 'system', content: systemPrompt },
-          ...messages.slice(-10).map(msg => ({
+          { role: 'system', content: systemContent },
+          ...nextMessages.slice(-10).map(msg => ({
             role: msg.role,
             content: msg.content
-          })),
-          { role: 'user', content: content.trim() }
+          }))
         ]
         
         const response = await sendOpenAIMessage(apiMessages)
@@ -149,11 +232,23 @@ function useRealChatFixed(subject = 'algebra', learningStyle = 'visual') {
   const clearMessages = useCallback(() => {
     setMessages([])
     try {
+      // Clear current subject messages
       localStorage.removeItem(getStorageKey(subject))
+      
+      // Clear all subject-specific message keys (in case user switched subjects)
+      const subjects = ['algebra', 'english']
+      subjects.forEach(subj => {
+        localStorage.removeItem(`sveti-messages-${subj}`)
+      })
+      
+      // Reset game preferences and state
+      resetGamePrefs()
+      
+      console.log('🧼 Cleared all chat messages and game preferences')
     } catch (error) {
       console.warn('Failed to clear messages:', error)
     }
-  }, [subject, getStorageKey])
+  }, [subject, getStorageKey, resetGamePrefs])
 
   return {
     messages,

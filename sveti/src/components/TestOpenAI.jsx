@@ -48,6 +48,53 @@ function TestOpenAI() {
             { role: 'user', content: 'Explain fractions using visual learning style.' }
           ]
           break
+
+        case 'gameContext':
+          // Clear all sveti- localStorage keys
+          console.log('🧹 Clearing all sveti- localStorage keys...')
+          Object.keys(localStorage).forEach(key => {
+            if (key.startsWith('sveti-')) {
+              localStorage.removeItem(key)
+              console.log(`   Cleared: ${key}`)
+            }
+          })
+          
+          // Send three sequential messages
+          const testMessages = [
+            'Explain slope',  
+            'Show steps',
+            'Practice please'
+          ]
+          
+          console.log('🎮 Starting Game Context Smoke Test...')
+          let gameTestResults = []
+          
+          for (let i = 0; i < testMessages.length; i++) {
+            const userMsg = testMessages[i]
+            console.log(`📤 Step ${i + 1}: Sending "${userMsg}"`)
+            
+            const testMsgs = [
+              { role: 'system', content: 'You are Sveti, a friendly algebra tutor with game-based learning.' },
+              { role: 'user', content: userMsg }
+            ]
+            
+            try {
+              const response = await sendMessage(testMsgs)
+              console.log(`📥 Step ${i + 1} Response:`, response.content)
+              gameTestResults.push(`Step ${i + 1} - "${userMsg}": ${response.content?.substring(0, 100)}...`)
+            } catch (error) {
+              console.error(`❌ Step ${i + 1} Error:`, error)
+              gameTestResults.push(`Step ${i + 1} - "${userMsg}": ERROR - ${error.message}`)
+            }
+            
+            // Small delay between messages
+            await new Promise(resolve => setTimeout(resolve, 500))
+          }
+          
+          setTestResult(`✅ GAME CONTEXT SMOKE TEST COMPLETE:\n${gameTestResults.join('\n\n')}`)
+          console.log('🎮 Game Context Smoke Test completed!')
+          setIsLoading(false)
+          return
           
         default:
           messages = [
@@ -125,6 +172,14 @@ function TestOpenAI() {
             className="px-4 py-3 bg-orange-500 text-white rounded-lg hover:bg-orange-600 disabled:opacity-50 font-medium"
           >
             👁️ Visual Learning Test
+          </button>
+          
+          <button
+            onClick={() => runTest('gameContext')}
+            disabled={isLoading}
+            className="px-4 py-3 bg-pink-500 text-white rounded-lg hover:bg-pink-600 disabled:opacity-50 font-medium"
+          >
+            🎮 Game Context Smoke Test
           </button>
           
           <button
