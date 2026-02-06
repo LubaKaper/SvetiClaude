@@ -1,6 +1,9 @@
 import { useState, useEffect, useCallback } from 'react'
 import { useGamePrefs } from './useGamePrefs'
 import { buildSystemWithGames } from '../config/prompts'
+import { classifyIntent } from '../utils/intentService'
+
+const DEBUG_INTENT = false
 
 // Chat hook that handles OpenAI calls with graceful error fallback
 export function useChat(subject = 'algebra', learningStyle = 'visual') {
@@ -138,10 +141,17 @@ export function useChat(subject = 'algebra', learningStyle = 'visual') {
         const getSystemPrompt = promptsModule.getSystemPrompt
         const getLearningStylePrompt = stylesModule.getLearningStylePrompt
 
+        // --- intent classification (fire-and-forget safe) ---
+        const userTextOriginal = nextMessages?.at(-1)?.content || "";
+        const intentResult = await classifyIntent(userTextOriginal);
+        if (DEBUG_INTENT && intentResult) {
+          console.log("🎯 Intent:", intentResult.intent, "confidence:", intentResult.confidence, "rationale:", intentResult.rationale);
+        }
+
         // --- quick topic detector for Sveti MVP ---
         // detect math topic from the student's latest message
         let topicKey = null;
-        const userText = (nextMessages?.at(-1)?.content || "").toLowerCase();
+        const userText = userTextOriginal.toLowerCase();
         if (userText.includes("%") || userText.includes("percent") || userText.includes("discount"))
           topicKey = "percentChange";
         else if (userText.includes("ratio") || userText.includes("proportion"))
@@ -161,11 +171,16 @@ export function useChat(subject = 'algebra', learningStyle = 'visual') {
           gamePrefs,
           topicKey
         );
-        console.log("🧩 System prompt preview (first 300 chars):", systemContent.slice(0, 300));
+        // Append intent routing hint if classification succeeded
+        let finalSystemContent = systemContent;
+        if (intentResult && intentResult.confidence > 0.5) {
+          finalSystemContent += `\n[Routing Hint]\nDetected user intent: ${intentResult.intent} (confidence: ${intentResult.confidence}). Respond accordingly.`;
+        }
+        console.log("🧩 System prompt preview (first 300 chars):", finalSystemContent.slice(0, 300));
 
         // Build API messages
         const apiMessages = [
-          { role: 'system', content: systemContent },
+          { role: 'system', content: finalSystemContent },
           ...nextMessages.slice(-10).map(msg => ({
             role: msg.role,
             content: msg.content

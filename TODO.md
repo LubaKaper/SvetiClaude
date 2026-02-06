@@ -13,6 +13,9 @@ Prioritized backlog. No feature changes -- only known issues and improvements.
 - [ ] **Add tests** with Vitest + React Testing Library. Priority: `useChat` hook, `openai.js` sendMessage, prompt building.
 - [ ] **Remove dead code in `openai.js`:** `createSystemMessage()` is never called (prompts.js handles this). Delete it.
 - [ ] **Responsive sidebar:** The 256px fixed sidebar has no mobile layout. Add a collapsible/drawer pattern for small screens.
+- [ ] **Intent classifier: upgrade to ML.** Current classifier is keyword-based. Consider a small fine-tuned model or embeddings for better accuracy.
+- [ ] **Intent service: containerize.** Add Dockerfile for `server-python/` for easier deployment.
+- [ ] **Intent service: configurable URL.** Currently hardcoded to `localhost:8000` in `intentService.js`. Move to env var.
 
 ## Low priority
 

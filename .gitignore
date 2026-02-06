@@ -32,6 +32,12 @@ dist-ssr
 .claude-cache/
 .claude.log
 
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
 # App state / local data
 data/
 storage/

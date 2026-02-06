@@ -17,11 +17,19 @@ npm run dev             # http://localhost:5173
 | `npm run preview` | Preview production build       |
 | `npm run lint`    | Run ESLint                     |
 
+### Python intent service (optional)
+
+| Command | Purpose |
+|---------|---------|
+| `cd server-python && uvicorn app.main:app --reload` | Start intent service on :8000 |
+| `cd server-python && pytest -v` | Run classifier tests |
+
 ## Tech stack
 
 - **Framework:** React 19 + Vite 7
 - **Styling:** Tailwind CSS 3.4 (class-based dark mode)
 - **AI:** OpenAI SDK (`gpt-4o-mini`) via `dangerouslyAllowBrowser` (dev only)
+- **Intent service:** Python FastAPI microservice (rule-based classifier, optional)
 - **Icons:** lucide-react
 - **Markdown:** react-markdown
 
@@ -46,6 +54,14 @@ src/
     useGamePrefs.js    # Game preference management (localStorage)
   utils/
     openai.js          # OpenAI client wrapper (sendMessage, validation, errors)
+    intentService.js   # Client for Python intent classifier (null-safe fallback)
+server-python/
+  app/
+    main.py            # FastAPI app, POST /classify endpoint
+    classifier.py      # Rule-based intent classifier (no ML deps)
+  tests/
+    test_classify.py   # pytest test suite (>=12 cases)
+  requirements.txt     # Python dependencies
 ```
 
 ## Environment variables
@@ -69,3 +85,5 @@ The app falls back to mock responses if the key is missing or invalid.
 - `src/hooks/useChat.js` -- All chat logic: send messages, game preference flow, OpenAI integration, localStorage persistence.
 - `src/config/prompts.js` -- System prompt construction and `buildSystemWithGames()`.
 - `src/utils/openai.js` -- OpenAI API wrapper with timeout, error codes, validation.
+- `src/utils/intentService.js` -- Frontend client for intent classification (null-safe fallback).
+- `server-python/app/classifier.py` -- Rule-based intent detection (no ML deps).
