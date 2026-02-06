@@ -2,6 +2,9 @@
 
 A modern AI tutoring interface that adapts to a learner’s style, supports multiple subjects, and personalizes explanations with optional game-based examples. Built with React and Vite, with OpenAI integration and graceful fallback responses.
 
+## Live Demo
+👉 https://sveti-claude.vercel.app/
+
 ## Features
 
 - **Learning-style modes** (visual, reading/writing, examples, socratic, analogies)
