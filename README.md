@@ -16,7 +16,7 @@ A modern AI tutoring interface that adapts to a learner’s style, supports mult
 
 - **Frontend:** React 19, Vite 7
 - **Styling:** Tailwind CSS, PostCSS, Autoprefixer
-- **AI:** OpenAI SDK
+- **AI:** OpenAI SDK (`gpt-4o-mini`)
 - **UI:** lucide-react, react-markdown
 - **Quality:** ESLint
 
@@ -26,7 +26,6 @@ A modern AI tutoring interface that adapts to a learner’s style, supports mult
 .
 ├── public/
 ├── src/
-│   ├── assets/
 │   ├── components/
 │   │   ├── InputArea.jsx
 │   │   ├── Message.jsx
@@ -37,31 +36,30 @@ A modern AI tutoring interface that adapts to a learner’s style, supports mult
 │   │   ├── learningStyles.js
 │   │   └── prompts.js
 │   ├── hooks/
-│   │   ├── useGamePrefs.js
-│   │   ├── useMockChat.js
-│   │   ├── useRealChat-fixed.js
-│   │   └── useRealChat.js
+│   │   ├── useChat.js
+│   │   └── useGamePrefs.js
 │   ├── utils/
-│   │   ├── openai.js
-│   │   └── testOpenAI.js
-│   ├── App-backup.jsx
-│   ├── App.css
+│   │   └── openai.js
 │   ├── App.jsx
 │   ├── index.css
 │   └── main.jsx
+├── .env.example
 ├── index.html
 ├── vite.config.js
 ├── tailwind.config.js
 ├── postcss.config.js
-└── package.json
+├── package.json
+├── CLAUDE.md
+├── ARCHITECTURE.md
+└── TODO.md
 ```
 
 ## Getting Started
 
 ### Prerequisites
 
-- Node.js 18+ (recommended)
-- npm (or pnpm/yarn)
+- Node.js 18+
+- npm
 
 ### Installation
 
@@ -70,9 +68,9 @@ A modern AI tutoring interface that adapts to a learner’s style, supports mult
 	npm install
 	```
 
-2. Create a `.env` file in the project root:
+2. Copy the env template and add your OpenAI key:
 	```bash
-	VITE_OPENAI_API_KEY=your_openai_api_key
+	cp .env.example .env
 	```
 
 3. Start the dev server:
@@ -89,10 +87,10 @@ npm run preview
 
 ## Scripts
 
-- `npm run dev` – Start Vite dev server
-- `npm run build` – Production build
-- `npm run preview` – Preview production build
-- `npm run lint` – Lint the codebase
+- `npm run dev` -- Start Vite dev server
+- `npm run build` -- Production build
+- `npm run preview` -- Preview production build
+- `npm run lint` -- Lint the codebase
 
 ## Configuration
 
@@ -100,16 +98,15 @@ npm run preview
 - **Learning styles & prompts** live under [src/config/](src/config).
 - **Game personalization** is handled by [src/hooks/useGamePrefs.js](src/hooks/useGamePrefs.js).
 
+## Documentation
+
+- [CLAUDE.md](CLAUDE.md) -- How to work in this repo (commands, conventions, key files)
+- [ARCHITECTURE.md](ARCHITECTURE.md) -- System diagram, request flow, state management
+- [TODO.md](TODO.md) -- Prioritized backlog
+
 ## Notes on Production
 
 The OpenAI client is currently configured for browser usage (`dangerouslyAllowBrowser: true`) for development. For production, route requests through a secure backend to protect API keys.
-
-## Contributing
-
-1. Fork the repo
-2. Create a feature branch
-3. Commit your changes
-4. Open a pull request
 
 ## License
 
