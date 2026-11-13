@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react'
 import { ArrowRight, Gamepad2 } from 'lucide-react'
 import Message from './Message'
 import InputArea from './InputArea'
-import { Spark } from './Logo'
+import { Mark } from './Logo'
 import { genericPack } from '../config/games'
 import { getSubject } from '../config/prompts'
 
@@ -14,9 +14,7 @@ function EmptyState({ subject, packs, onStarter, onPickGames }) {
 
   return (
     <div className="mx-auto flex min-h-full w-full max-w-2xl flex-col items-center justify-center px-4 py-10 text-center">
-      <span className="mb-5 inline-flex h-16 w-16 animate-pop items-center justify-center rounded-2xl bg-accent text-on-accent shadow-glow">
-        <Spark size={38} />
-      </span>
+      <Mark size={76} className="mb-5 animate-pop rounded-[18px] shadow-glow" />
       <h1 className="font-display text-3xl font-bold tracking-tight sm:text-4xl">What are we learning today?</h1>
       <p className="mt-3 max-w-md text-[15px] leading-relaxed text-muted">
         {packs.length ? (

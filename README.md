@@ -1,8 +1,8 @@
 <div align="center">
 
-# ✦ Sveti
+<img src="docs/logo.svg" alt="Sveti — learn it in your game" width="420" />
 
-### Learn it in your game.
+# Sveti
 
 **An AI tutor that teaches algebra and writing through the video games you actually play.**
 
@@ -23,7 +23,7 @@
 >
 > Because **1 coal smelts 8 items**, a **Vandal costs 2,900 credits**, and **Roblox keeps 30% of your game pass**. You've been doing algebra for years. Nobody told you.
 
-*Sveti* (свети) means **"shine"** — the idea is to light up schoolwork using something a student already cares about. Tell Sveti what you play, and every explanation, example and practice problem is set inside that game, using its **real items, prices and mechanics**.
+*Sveti* (свети) is Russian for **"shine"** or **"give light"** — the idea is to illuminate schoolwork using something a student already cares about. Tell Sveti what you play, and every explanation, example and practice problem is set inside that game, using its **real items, prices and mechanics**.
 
 ## What it does
 
