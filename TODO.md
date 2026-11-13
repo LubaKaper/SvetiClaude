@@ -1,25 +1,33 @@
 # TODO
 
-Prioritized backlog. No feature changes -- only known issues and improvements.
+## Done in v1.0
+
+- [x] Backend proxy for AI calls — the key no longer ships to the browser
+- [x] Real game references: fact sheets for 10 games + custom games
+- [x] Quests: locally generated and checked practice problems
+- [x] Streaming replies, KaTeX math, Markdown tables
+- [x] Persisted theme, responsive layout with a mobile drawer
+- [x] Tests (Vitest) for the quest engine, prompts and server validation
+- [x] English subject now uses the English prompt (it was silently falling back to algebra)
 
 ## High priority
 
-- [ ] **Add backend proxy for OpenAI calls.** The app currently uses `dangerouslyAllowBrowser: true`, exposing the API key in the browser. Production should route requests through a backend (Express, Cloudflare Worker, etc.) that holds the key server-side.
-- [ ] **Rotate API key** if the `.env` file was ever shared or committed. Check OpenAI usage logs for unauthorized calls.
+- [ ] **Rotate the old OpenAI key.** Earlier deployments bundled `VITE_OPENAI_API_KEY` into the browser, so treat that key as public. Create a new one and set it as `OPENAI_API_KEY` in Vercel.
+- [ ] **Rate-limit `/api/chat`** (per IP, e.g. Upstash or Vercel KV) so a public deployment can't run up the bill.
 
-## Medium priority
+## Next
 
-- [ ] **Persist dark mode** to localStorage (currently resets on page reload).
-- [ ] **Add tests** with Vitest + React Testing Library. Priority: `useChat` hook, `openai.js` sendMessage, prompt building.
-- [ ] **Remove dead code in `openai.js`:** `createSystemMessage()` is never called (prompts.js handles this). Delete it.
-- [ ] **Responsive sidebar:** The 256px fixed sidebar has no mobile layout. Add a collapsible/drawer pattern for small screens.
-- [ ] **Intent classifier: upgrade to ML.** Current classifier is keyword-based. Consider a small fine-tuned model or embeddings for better accuracy.
-- [ ] **Intent service: containerize.** Add Dockerfile for `server-python/` for easier deployment.
-- [ ] **Intent service: configurable URL.** Currently hardcoded to `localhost:8000` in `intentService.js`. Move to env var.
+- [ ] More game packs (EA FC, Among Us, League of Legends, Animal Crossing, Hollow Knight…)
+- [ ] More quest topics: inequalities, exponents, quadratics, graphing
+- [ ] Have the AI tutor hand out quests in chat and see quest results (so it knows what the student struggles with)
+- [ ] English "quests": grammar fixes and thesis-building with game-themed sentences
+- [ ] Per-topic mastery tracking and a simple progress page
+- [ ] Sync progress across devices (needs accounts)
+- [ ] Component tests with React Testing Library
+- [ ] Code-split KaTeX to shrink the initial bundle
 
-## Low priority
+## Later
 
-- [ ] **Add React ErrorBoundary** component for graceful crash handling.
-- [ ] **Consider TypeScript migration** for type safety across hooks, config, and components.
-- [ ] **Add localStorage expiration** -- old conversations should auto-clear after N days to avoid unbounded storage growth.
-- [ ] **Add loading skeleton** instead of typing dots for better perceived performance.
+- [ ] TypeScript migration
+- [ ] Teacher/parent view
+- [ ] Decide whether to keep the Python intent service now that the rules also run in JS

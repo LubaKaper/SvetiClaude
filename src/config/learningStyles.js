@@ -1,65 +1,51 @@
 /**
- * Learning Style Configurations for Sveti AI Tutor
- * Personalizes teaching approach based on student's preferred learning modality
+ * Learning styles: how Sveti presents an explanation.
+ * `prompt` is appended to the system prompt; the rest drives the UI.
  */
-
 export const learningStyles = {
   visual: {
     id: 'visual',
     name: 'Visual',
-    description: 'Structured steps, tables, and clear formatting',
-    color: 'from-blue-500 to-cyan-500',
-    ringColor: 'ring-blue-300 dark:ring-blue-700',
-    promptModifier: 'VISUAL approach: Use numbered steps, tables, headers, and clear formatting. Make content scannable.'
+    description: 'Steps, tables and clear structure',
+    prompt:
+      'VISUAL: Make it scannable. Use short numbered steps, a small table when comparing values, and line up the math so each step sits on its own line. Bold the key idea in each step.',
   },
   reading: {
     id: 'reading',
     name: 'Reading',
-    description: 'Detailed written explanations',
-    color: 'from-purple-500 to-pink-500',
-    ringColor: 'ring-purple-300 dark:ring-purple-700',
-    promptModifier: 'READING approach: Provide detailed, comprehensive explanations with clear definitions.'
+    description: 'Thorough written explanations',
+    prompt:
+      'READING: Explain in clear, connected paragraphs. Define each term the first time it appears and explain why each step works, not only what to do.',
   },
   examples: {
     id: 'examples',
     name: 'Examples',
-    description: 'Multiple worked examples',
-    color: 'from-orange-500 to-red-500',
-    ringColor: 'ring-orange-300 dark:ring-orange-700',
-    promptModifier: 'Teach through concrete, worked examples. DO NOT ask the student questions - just show examples directly.\n\nStructure your response:\n1. Brief concept explanation (1-2 sentences)\n2. Example 1 with full solution\n3. Example 2 with full solution\n4. Example 3 with full solution (if relevant)\n5. Offer practice problems\n\nStart immediately with examples. Do not ask "What do you know?" or "Can you tell me?" - just demonstrate with clear examples.'
+    description: 'Learn from worked examples',
+    prompt:
+      'EXAMPLES: Teach by demonstration. Give a one-sentence idea, then two fully worked examples (the second slightly harder), then one similar problem for the student to try. Do not open with questions.',
   },
   socratic: {
     id: 'socratic',
     name: 'Socratic',
-    description: 'Guided questions and discovery',
-    color: 'from-emerald-500 to-teal-500',
-    ringColor: 'ring-emerald-300 dark:ring-emerald-700',
-    promptModifier: 'SOCRATIC approach: Guide through questions, not direct answers. Ask "What happens if...?"'
+    description: 'Guided questions, you discover it',
+    prompt:
+      'SOCRATIC: Lead with questions. Ask one focused question at a time, wait for the answer, and build on it. Only explain directly when the student is clearly stuck.',
   },
   analogies: {
     id: 'analogies',
     name: 'Stories',
-    description: 'Real-world analogies and metaphors',
-    color: 'from-indigo-500 to-purple-600',
-    ringColor: 'ring-indigo-300 dark:ring-indigo-700',
-    promptModifier: 'Explain using real-world analogies and stories. DO NOT ask the student questions first - just tell the story/analogy directly.\n\nStructure your response:\n1. Start with "Think of it like this..." or "Imagine..."\n2. Tell the analogy/story that explains the concept\n3. Connect it back to the actual topic\n4. Use everyday experiences they relate to\n\nDo not ask "Have you ever...?" and then answer it yourself. Just tell the story and make the connection. Be direct and engaging.'
-  }
+    description: 'Analogies and mini-stories',
+    prompt:
+      'STORIES: Open with a short scene or analogy that makes the idea click, then map each part of the story onto the math or writing concept explicitly.',
+  },
 }
 
-/**
- * Get the prompt modifier for a specific learning style
- * @param {string} styleKey - The learning style key
- * @returns {string} The prompt modifier text
- */
+export const DEFAULT_STYLE = 'visual'
+
 export function getLearningStylePrompt(styleKey) {
-  const style = learningStyles[styleKey]
-  return style ? style.promptModifier : learningStyles.visual.promptModifier
+  return (learningStyles[styleKey] || learningStyles[DEFAULT_STYLE]).prompt
 }
 
-/**
- * Get all learning styles as an array
- * @returns {Array} Array of learning style objects
- */
 export function getAllStyles() {
   return Object.values(learningStyles)
 }

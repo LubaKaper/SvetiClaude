@@ -1,152 +1,153 @@
-import { useState, useEffect } from 'react'
-import { learningStyles, getAllStyles } from './config/learningStyles'
-import MessageList from './components/MessageList'
-import InputArea from './components/InputArea'
-import TestOpenAI from './components/TestOpenAI'
+import { useCallback, useEffect, useState } from 'react'
+import { Menu, MessageCircle, Swords, Trash2 } from 'lucide-react'
+import Sidebar from './components/Sidebar'
+import ChatView from './components/ChatView'
+import QuestView from './components/QuestView'
+import GamePicker from './components/GamePicker'
 import { useChat } from './hooks/useChat'
-import './index.css'
+import { useGamePrefs } from './hooks/useGamePrefs'
+import { useProgress } from './hooks/useProgress'
+import { useLocalStorage } from './hooks/useLocalStorage'
+import { learningStyles, DEFAULT_STYLE } from './config/learningStyles'
+import { SUBJECTS, DEFAULT_SUBJECT } from './config/prompts'
 
-function App() {
-  const [darkMode, setDarkMode] = useState(false)
-  const [subject, setSubject] = useState('algebra')
-  const [testMode, setTestMode] = useState(false)
-  const [learningStyle, setLearningStyle] = useState('visual')
-  const { messages, isLoading, sendMessage, clearMessages } = useChat(subject, learningStyle)
-
-  // Load learning style from localStorage
-  useEffect(() => {
-    const saved = localStorage.getItem('sveti-learning-style')
-    if (saved && learningStyles[saved]) {
-      setLearningStyle(saved)
-    }
-  }, [])
-
-  // Save learning style when changed
-  useEffect(() => {
-    localStorage.setItem('sveti-learning-style', learningStyle)
-  }, [learningStyle])
-
-  useEffect(() => {
-    if (darkMode) {
-      document.documentElement.classList.add('dark')
-    } else {
-      document.documentElement.classList.remove('dark')
-    }
-  }, [darkMode])
-
-  return (
-    <div className="h-screen flex bg-gray-50 dark:bg-gray-800">
-      {/* LEFT SIDEBAR - Learning Styles */}
-      <aside className="w-64 bg-white dark:bg-gray-700 border-r border-gray-200 dark:border-gray-600 flex flex-col">
-        <div className="p-4 border-b border-gray-200 dark:border-gray-600">
-          <h3 className="text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider mb-3">
-            Learning Style
-          </h3>
-        </div>
-
-        <nav className="flex-1 p-3 space-y-2 overflow-y-auto">
-          {getAllStyles().map(style => (
-            <button
-              key={style.id}
-              onClick={() => setLearningStyle(style.id)}
-              className={`w-full text-left px-3 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
-                learningStyle === style.id
-                  ? `bg-gradient-to-r ${style.color} text-white shadow-md ring-2 ${style.ringColor} opacity-100 scale-110`
-                  : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 opacity-80 hover:opacity-95'
-              }`}
-            >
-              <div className="font-semibold">{style.name}</div>
-              <div className={`text-xs mt-1 ${
-                learningStyle === style.id ? 'text-white/80' : 'text-gray-500 dark:text-gray-400'
-              }`}>
-                {style.description}
-              </div>
-            </button>
-          ))}
-        </nav>
-      </aside>
-
-      {/* MAIN CONTENT */}
-      <div className="flex-1 flex flex-col">
-        {/* HEADER */}
-        <header className="bg-white dark:bg-gray-700 border-b border-gray-200 dark:border-gray-600 px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <div>
-                <h1 className="text-xl font-bold text-gray-900 dark:text-white">
-                  Sveti AI Tutor
-                </h1>
-                <p className="text-sm text-gray-600 dark:text-gray-300">
-                  {learningStyles[learningStyle]?.name} Learning Style
-                </p>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-                  Subject:
-                </label>
-                <select
-                  value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
-                  className="px-3 py-1 text-sm border border-gray-300 dark:border-gray-500 rounded-lg bg-white dark:bg-gray-600 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="algebra">Algebra</option>
-                  <option value="english">English</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="flex items-center gap-3">
-              <button
-                onClick={clearMessages}
-                className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors"
-              >
-                Clear Chat
-              </button>
-
-              <button
-                onClick={() => setTestMode(!testMode)}
-                className={`px-3 py-2 text-sm font-medium rounded-lg transition-colors ${
-                  testMode
-                    ? 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200'
-                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600'
-                }`}
-              >
-                {testMode ? 'Exit Test' : 'Test Mode'}
-              </button>
-
-              <button
-                onClick={() => setDarkMode(!darkMode)}
-                className="px-3 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 rounded-lg transition-colors"
-              >
-                {darkMode ? 'Light' : 'Dark'}
-              </button>
-            </div>
-          </div>
-        </header>
-
-        {/* CHAT AREA */}
-        <div className="flex-1 flex flex-col overflow-hidden">
-          {testMode ? (
-            <TestOpenAI />
-          ) : (
-            <>
-              <div className="flex-1 overflow-hidden">
-                <MessageList messages={messages} isLoading={isLoading} subject={subject} />
-              </div>
-              <div className="border-t border-gray-200 dark:border-gray-600">
-                <InputArea
-                  onSendMessage={sendMessage}
-                  disabled={isLoading}
-                  subject={subject}
-                />
-              </div>
-            </>
-          )}
-        </div>
-      </div>
-    </div>
+function StatusPill({ status }) {
+  if (status.live === null) return null
+  return status.live ? (
+    <span className="inline-flex items-center gap-1.5 rounded-full border border-good/40 bg-good/10 px-2.5 py-1 text-xs font-semibold text-good" title={`Connected to ${status.model}`}>
+      <span className="h-1.5 w-1.5 rounded-full bg-good" /> AI live
+    </span>
+  ) : (
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full border border-accent/40 bg-accent/10 px-2.5 py-1 text-xs font-semibold text-accent-text"
+      title="No AI key on the server. Quests work fully; chat replies are built-in worked examples."
+    >
+      <span className="h-1.5 w-1.5 rounded-full bg-accent" /> Demo mode
+    </span>
   )
 }
 
-export default App
+export default function App() {
+  const [theme, setTheme] = useLocalStorage('sveti-theme', 'dark')
+  const [storedSubject, setSubject] = useLocalStorage('sveti-subject', DEFAULT_SUBJECT)
+  const [storedStyle, setLearningStyle] = useLocalStorage('sveti-learning-style', DEFAULT_STYLE)
+  const [view, setView] = useState('chat')
+  const [menuOpen, setMenuOpen] = useState(false)
+  const [draft, setDraft] = useState(null)
+
+  const subject = SUBJECTS[storedSubject] ? storedSubject : DEFAULT_SUBJECT
+  const learningStyle = learningStyles[storedStyle] ? storedStyle : DEFAULT_STYLE
+
+  const { games, packs, setGames, asked, setAsked } = useGamePrefs()
+  const [pickerOpen, setPickerOpen] = useState(() => !asked && games.length === 0)
+  const firstRun = !asked && games.length === 0
+
+  const progress = useProgress()
+  const chat = useChat({ subject, learningStyle, games })
+
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', theme !== 'light')
+  }, [theme])
+
+  // Quests are algebra practice; in English the app is chat-only.
+  const questsAvailable = subject === 'algebra'
+  const activeView = questsAvailable ? view : 'chat'
+
+  const closePicker = useCallback(() => {
+    setPickerOpen(false)
+    setAsked(true)
+  }, [setAsked])
+
+  const askSveti = (text) => {
+    setDraft({ text, at: Date.now() })
+    setView('chat')
+  }
+
+  const clearChat = () => {
+    if (window.confirm(`Clear your ${SUBJECTS[subject].name} conversation? Your games and XP are kept.`)) chat.clearMessages()
+  }
+
+  const tabs = [
+    { id: 'chat', label: 'Chat', icon: MessageCircle },
+    ...(questsAvailable ? [{ id: 'quests', label: 'Quests', icon: Swords }] : []),
+  ]
+
+  return (
+    <div className="flex h-dvh overflow-hidden">
+      <Sidebar
+        open={menuOpen}
+        onClose={() => setMenuOpen(false)}
+        progress={progress}
+        packs={packs}
+        onPickGames={() => {
+          setMenuOpen(false)
+          setPickerOpen(true)
+        }}
+        subject={subject}
+        onSubject={(s) => {
+          setSubject(s)
+          setDraft(null)
+        }}
+        learningStyle={learningStyle}
+        onLearningStyle={setLearningStyle}
+        theme={theme === 'light' ? 'light' : 'dark'}
+        onToggleTheme={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+      />
+
+      <main className="backdrop flex min-w-0 flex-1 flex-col">
+        <header className="flex items-center gap-2 border-b border-line bg-bg/70 px-3 py-2.5 backdrop-blur sm:px-6">
+          <button type="button" onClick={() => setMenuOpen(true)} className="icon-btn lg:hidden" aria-label="Open menu">
+            <Menu size={20} />
+          </button>
+
+          <nav className="flex gap-1 rounded-xl border border-line bg-panel p-1" aria-label="Mode">
+            {tabs.map(({ id, label, icon: Icon }) => (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setView(id)}
+                aria-current={activeView === id ? 'page' : undefined}
+                className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
+                  activeView === id ? 'bg-raised text-fg' : 'text-muted hover:text-fg'
+                }`}
+              >
+                <Icon size={15} /> {label}
+              </button>
+            ))}
+          </nav>
+
+          <span className="ml-1 hidden text-sm text-muted sm:inline">
+            {SUBJECTS[subject].name} · {learningStyles[learningStyle].name}
+          </span>
+
+          <div className="ml-auto flex items-center gap-1.5">
+            <StatusPill status={chat.status} />
+            {activeView === 'chat' && chat.messages.length > 0 && (
+              <button type="button" onClick={clearChat} className="icon-btn" aria-label="Clear conversation" title="Clear conversation">
+                <Trash2 size={17} />
+              </button>
+            )}
+          </div>
+        </header>
+
+        {activeView === 'quests' ? (
+          <QuestView packs={packs} progress={progress} onAskSveti={askSveti} onPickGames={() => setPickerOpen(true)} />
+        ) : (
+          <ChatView chat={chat} subject={subject} packs={packs} draft={draft} onPickGames={() => setPickerOpen(true)} />
+        )}
+      </main>
+
+      {pickerOpen && (
+        <GamePicker
+          initial={games}
+          firstRun={firstRun}
+          onClose={closePicker}
+          onSave={(list) => {
+            setGames(list)
+            setPickerOpen(false)
+          }}
+        />
+      )}
+    </div>
+  )
+}

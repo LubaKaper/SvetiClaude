@@ -1,37 +1,35 @@
 /**
- * Client for the Python intent classification microservice.
+ * Intent classification for a student message.
  *
- * Calls POST http://localhost:8000/classify with the student's message.
- * Returns { intent, confidence, rationale } on success, or null on any error.
- *
- * The frontend treats null as "service unavailable" and continues without
- * intent data — the app works identically whether the service is running or not.
+ * By default this uses the built-in rules in `src/lib/intent.js`. If
+ * `VITE_INTENT_SERVICE_URL` is set (e.g. http://localhost:8000/classify), the
+ * optional Python service in `server-python/` is tried first, with the
+ * built-in rules as the fallback if it is slow or unreachable.
  */
+import { classifyIntent as classifyLocally } from '../lib/intent.js'
 
-const INTENT_SERVICE_URL = 'http://localhost:8000/classify'
+const SERVICE_URL = import.meta.env?.VITE_INTENT_SERVICE_URL || ''
 
 /**
- * Classify the intent of a student message.
- * @param {string} text - The raw message text
- * @returns {Promise<{intent: string, confidence: number, rationale: string} | null>}
+ * @param {string} text
+ * @returns {Promise<{intent: string, confidence: number}>}
  */
 export async function classifyIntent(text) {
-  try {
-    const controller = new AbortController()
-    const timeoutId = setTimeout(() => controller.abort(), 2000) // 2s timeout
-
-    const res = await fetch(INTENT_SERVICE_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ text }),
-      signal: controller.signal
-    })
-    clearTimeout(timeoutId)
-
-    if (!res.ok) return null
-    return await res.json()
-  } catch {
-    // Server down, timeout, network error → silent fallback
-    return null
+  if (SERVICE_URL) {
+    try {
+      const res = await fetch(SERVICE_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text }),
+        signal: AbortSignal.timeout(1500),
+      })
+      if (res.ok) {
+        const data = await res.json()
+        if (data?.intent) return { intent: data.intent, confidence: Number(data.confidence) || 0 }
+      }
+    } catch {
+      // fall through to the built-in classifier
+    }
   }
+  return classifyLocally(text)
 }

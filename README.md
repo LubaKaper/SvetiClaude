@@ -1,116 +1,209 @@
-# Sveti AI Tutor
+<div align="center">
 
-A modern AI tutoring interface that adapts to a learner’s style, supports multiple subjects, and personalizes explanations with optional game-based examples. Built with React and Vite, with OpenAI integration and graceful fallback responses.
+# ✦ Sveti
 
-## Live Demo
-👉 https://sveti-claude.vercel.app/
+### Learn it in your game.
 
-## Features
+**An AI tutor that teaches algebra and writing through the video games you actually play.**
 
-- **Learning-style modes** (visual, reading/writing, examples, socratic, analogies)
-- **Subject switching** (Algebra, English)
-- **Personalized prompts** using optional game preferences
-- **Local chat persistence** via `localStorage`
-- **Test mode** for OpenAI integration checks
-- **Dark mode** UI theme
-- **Resilient AI calls** with timeouts and friendly error handling
+[**▶ Live demo**](https://sveti-claude.vercel.app/) · [How it works](#how-it-works) · [Run it locally](#run-it-locally) · [Add a game](#add-your-own-game)
 
-## Tech Stack
+![React 19](https://img.shields.io/badge/React-19-61dafb?logo=react&logoColor=white)
+![Vite 7](https://img.shields.io/badge/Vite-7-646cff?logo=vite&logoColor=white)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind-3.4-38bdf8?logo=tailwindcss&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-vitest-6e9f18?logo=vitest&logoColor=white)
 
-- **Frontend:** React 19, Vite 7
-- **Styling:** Tailwind CSS, PostCSS, Autoprefixer
-- **AI:** OpenAI SDK (`gpt-4o-mini`)
-- **UI:** lucide-react, react-markdown
-- **Quality:** ESLint
+![Sveti home screen](docs/screenshots/home.png)
 
-## Project Structure
+</div>
 
+---
+
+> *"Why do I need to know this?"*
+>
+> Because **1 coal smelts 8 items**, a **Vandal costs 2,900 credits**, and **Roblox keeps 30% of your game pass**. You've been doing algebra for years. Nobody told you.
+
+*Sveti* (свети) means **"shine"** — the idea is to light up schoolwork using something a student already cares about. Tell Sveti what you play, and every explanation, example and practice problem is set inside that game, using its **real items, prices and mechanics**.
+
+## What it does
+
+| | |
+|---|---|
+| 🎮 **Speaks your game** | Pick up to three games. Ten come with hand-written fact sheets (Minecraft, Fortnite, Roblox, Pokémon, Zelda, Mario Kart, Rocket League, Stardew Valley, Genshin Impact, Valorant). Type any other game and the AI uses what it knows about it. |
+| ⚔️ **Quests** | Endless practice problems in five algebra topics and three difficulties, themed to your game. Answers are checked instantly, with a three-step hint ladder and a full worked solution. |
+| 💬 **AI tutor chat** | Streaming replies with properly typeset math. It teaches the method instead of handing over answers, and checks your work honestly. |
+| 🧠 **Five learning styles** | Visual, Reading, Examples, Socratic or Stories — the same idea, explained the way you learn best. |
+| ✍️ **English too** | A writing coach that uses your game's world and debates as material, and never writes the essay for you. |
+| 🔥 **XP, levels and streaks** | Solve quests cleanly to level up. Hints cost a little XP; peeking at the solution costs your streak. |
+| 🔌 **Works without an AI key** | Quests run entirely in the browser. With no key, chat switches to a clearly-labelled demo mode that still teaches with real worked examples. |
+| 🔒 **Key stays on the server** | The browser never sees the API key. |
+
+<div align="center">
+
+![Choosing games](docs/screenshots/picker.png)
+
+</div>
+
+## Quests: real game math, checked instantly
+
+A quest isn't "Minecraft" pasted onto a textbook problem. Each game pack knows how its game works, so the math is the math you'd genuinely do while playing:
+
+| Game | The quest | The algebra |
+|---|---|---|
+| ⛏️ Minecraft | Your base is 2,400 blocks away. How long is the Nether highway? | Proportions (1 : 8) |
+| 🎯 Valorant | You have 2,300 credits and need a Vandal. How many kills? | `200x + 2300 = 2900` |
+| 🧱 Roblox | Your game pass costs 250 Robux. What do you keep after the fee? | 70% of a number |
+| 🚗 Rocket League | You spawn with 33 boost and arrive with 69. How many small pads? | `12x + 33 = 69` |
+| ⚡ Pokémon | 9 balls, ₽3,800 spent, Great Balls and Poké Balls. How many of each? | System of equations |
+| 🌾 Stardew Valley | A gold-quality pumpkin sells for 50% more than 320g. | Percent increase |
+
+<div align="center">
+
+![A solved quest with its worked solution](docs/screenshots/quest-solved.png)
+
+</div>
+
+Quests are generated and graded by plain, deterministic code — not by the AI — so **the answer key is never wrong**. The test suite generates around ten thousand quests across every game, topic and difficulty and checks each one.
+
+## How it works
+
+```mermaid
+flowchart LR
+    subgraph Browser
+        UI[React app] --> Q[Quest engine<br/>generate · hint · check]
+        UI --> C[useChat]
+        Q --> G[(Game packs<br/>facts + scenarios)]
+    end
+    C -- "subject, style, games,<br/>recent messages" --> API["/api/chat<br/>serverless function"]
+    API --> P[Build system prompt<br/>persona + style + game fact sheets]
+    G -.-> P
+    P --> AI[(AI model)]
+    AI -- streamed text --> C
+    C -. "no key? demo mode" .-> Q
 ```
-.
-├── public/
-├── src/
-│   ├── components/
-│   │   ├── InputArea.jsx
-│   │   ├── Message.jsx
-│   │   ├── MessageList.jsx
-│   │   └── TestOpenAI.jsx
-│   ├── config/
-│   │   ├── gameTemplates.js
-│   │   ├── learningStyles.js
-│   │   └── prompts.js
-│   ├── hooks/
-│   │   ├── useChat.js
-│   │   └── useGamePrefs.js
-│   ├── utils/
-│   │   └── openai.js
-│   ├── App.jsx
-│   ├── index.css
-│   └── main.jsx
-├── .env.example
-├── index.html
-├── vite.config.js
-├── tailwind.config.js
-├── postcss.config.js
-├── package.json
-├── CLAUDE.md
-├── ARCHITECTURE.md
-└── TODO.md
-```
 
-## Getting Started
+1. **Game packs** (`src/config/games.js`) hold everything Sveti knows about a game: a fact sheet of real mechanics, conversation starters, and one quest scenario per algebra topic.
+2. **The quest engine** (`src/lib/`) turns a scenario into a full problem — answer, three hints, worked solution — and checks whatever the student types (`12`, `x = 12`, `1,200 V-Bucks`, `3/4`, `25%` all work).
+3. **The tutor prompt** (`src/config/prompts.js`) combines the subject persona, the chosen learning style and the fact sheets for the student's games, with rules like *use real mechanics, never invent stats, don't give away homework answers*.
+4. **The backend** (`server/chat.js`, deployed as `api/chat.js`) builds that prompt on the server, calls the model and streams the reply. The browser only sends structured choices, so the endpoint can't be used as a free general-purpose AI proxy.
+5. **Demo mode**: if the server has no key, chat answers come from the quest engine instead, as worked examples in the student's game.
 
-### Prerequisites
+More detail in [ARCHITECTURE.md](ARCHITECTURE.md).
 
-- Node.js 18+
-- npm
+## Run it locally
 
-### Installation
-
-1. Install dependencies:
-	```bash
-	npm install
-	```
-
-2. Copy the env template and add your OpenAI key:
-	```bash
-	cp .env.example .env
-	```
-
-3. Start the dev server:
-	```bash
-	npm run dev
-	```
-
-### Build & Preview
+You need Node.js 20+.
 
 ```bash
-npm run build
-npm run preview
+npm install
 ```
 
-## Scripts
+```bash
+cp .env.example .env
+```
 
-- `npm run dev` -- Start Vite dev server
-- `npm run build` -- Production build
-- `npm run preview` -- Preview production build
-- `npm run lint` -- Lint the codebase
+```bash
+npm run dev
+```
 
-## Configuration
+Open http://localhost:5173. Without a key you get demo mode (quests fully work). To turn on the AI tutor, put your OpenAI key in `.env`:
 
-- **OpenAI**: The client uses `VITE_OPENAI_API_KEY` from `.env`.
-- **Learning styles & prompts** live under [src/config/](src/config).
-- **Game personalization** is handled by [src/hooks/useGamePrefs.js](src/hooks/useGamePrefs.js).
+```
+OPENAI_API_KEY=sk-...
+```
 
-## Documentation
+| Command | What it does |
+|---|---|
+| `npm run dev` | Dev server, including the `/api/chat` backend |
+| `npm test` | Run the test suite (Vitest) |
+| `npm run lint` | ESLint |
+| `npm run build` | Production build to `dist/` |
+| `npm run preview` | Serve the production build, with the backend |
 
-- [CLAUDE.md](CLAUDE.md) -- How to work in this repo (commands, conventions, key files)
-- [ARCHITECTURE.md](ARCHITECTURE.md) -- System diagram, request flow, state management
-- [TODO.md](TODO.md) -- Prioritized backlog
+### Environment variables
 
-## Notes on Production
+All of these are **server-side only**.
 
-The OpenAI client is currently configured for browser usage (`dangerouslyAllowBrowser: true`) for development. For production, route requests through a secure backend to protect API keys.
+| Variable | Required | Purpose |
+|---|---|---|
+| `OPENAI_API_KEY` | For AI chat | Your OpenAI key. Without it the app runs in demo mode. |
+| `OPENAI_MODEL` | No | Model name. Defaults to `gpt-4o-mini`. |
+| `OPENAI_BASE_URL` | No | Point at any OpenAI-compatible API. |
+| `VITE_INTENT_SERVICE_URL` | No | Use the optional Python intent service instead of the built-in rules. |
 
-## License
+### Deploy
 
-No license file is included. Add a LICENSE file if you want to specify usage terms.
+The app is set up for [Vercel](https://vercel.com): import the repo, add `OPENAI_API_KEY` under **Settings → Environment Variables**, and deploy. Vercel serves the static app and runs `api/chat.js` as a serverless function.
+
+## Add your own game
+
+Game packs are plain data plus five small functions. Add an entry to `GAMES` in `src/config/games.js`:
+
+```js
+{
+  id: 'celeste',
+  name: 'Celeste',
+  emoji: '🍓',
+  tint: '#e5484d',
+  genre: 'Precision platformer',
+  aliases: [],
+  facts: ['There are 175 strawberries in the base game.', /* … */],
+  starters: ['Explain percentages using strawberries collected'],
+  writing: ['Help me analyze how the mountain works as a metaphor'],
+  scenarios: {
+    percent: (r) => {
+      const found = r.by(35, 70, 105) // easy, medium, hard
+      return Q.percent({
+        kind: 'what', part: found, whole: 175, unit: '%',
+        story: `You've collected **${found}** of the **175 strawberries**.`,
+        ask: 'What percent have you found?',
+      })
+    },
+    // linear, ratio, fn, system …
+  },
+}
+```
+
+You pick the numbers and tell the story; the builders in `src/lib/builders.js` produce the answer, hints and solution. Run `npm test` — the suite automatically checks every scenario of every game.
+
+## Tech stack
+
+- **Frontend:** React 19, Vite 7, Tailwind CSS 3.4, lucide-react
+- **Math & Markdown:** react-markdown, remark-math, KaTeX, GitHub-flavoured tables
+- **Backend:** one Node serverless function using the OpenAI SDK, with streaming
+- **Tests:** Vitest
+- **Optional:** a FastAPI rule-based intent classifier in [`server-python/`](server-python/)
+
+## Project layout
+
+```
+api/chat.js            Vercel function (thin wrapper)
+server/chat.js         Backend core: validation, prompt, streaming
+src/
+  App.jsx              Layout, view switching, theme
+  components/          Sidebar, ChatView, QuestView, GamePicker, Message, …
+  config/
+    games.js           Game packs: facts, starters, quest scenarios
+    prompts.js         Subjects, quick actions, system prompt
+    learningStyles.js  The five teaching styles
+  lib/
+    builders.js        Problem builders (the math + hints + solutions)
+    quests.js          Quest generation, answer checking, XP
+    intent.js          Intent + topic detection
+    localTutor.js      Demo-mode replies
+  hooks/               useChat, useGamePrefs, useProgress, useLocalStorage
+tests/                 Vitest suites
+server-python/         Optional FastAPI intent service
+```
+
+## Roadmap
+
+See [TODO.md](TODO.md). Next up: more game packs, quests for more topics (inequalities, exponents, quadratics), rate limiting on the API, and saved progress across devices.
+
+---
+
+<div align="center">
+
+Sveti is an independent learning project and is **not affiliated with, endorsed by, or sponsored by** any game or publisher mentioned here. Game names are trademarks of their respective owners and are used only to describe the games.
+
+</div>

@@ -1,22 +1,40 @@
-# Development Setup
-
-How to run the full Sveti stack locally (frontend + intent classification service).
+# Development
 
 ## Prerequisites
 
-- **Node.js** 18+
-- **Python** 3.10+
-- An **OpenAI API key** (for AI tutoring responses)
+- **Node.js** 20+
+- An **OpenAI API key** if you want live AI chat (optional — demo mode works without one)
+- **Python** 3.10+ only if you want to run the optional intent service
 
-## Terminal 1 — Frontend (React + Vite)
+## Run the app
 
 ```bash
 npm install
-cp .env.example .env          # then paste your OpenAI key
+cp .env.example .env          # optional: set OPENAI_API_KEY
 npm run dev                    # http://localhost:5173
 ```
 
-## Terminal 2 — Intent service (FastAPI, optional)
+`npm run dev` also serves the backend at `/api/chat` (a Vite middleware in `vite.config.js` that loads `server/chat.js`), so there is no second process to start. Restart the dev server after editing `.env`.
+
+The pill in the top-right corner shows **AI live** or **Demo mode**. You can check the backend directly:
+
+```bash
+curl localhost:5173/api/chat
+```
+
+## Checks
+
+```bash
+npm test          # Vitest
+npm run lint      # ESLint
+npm run build     # production build
+```
+
+## Testing against a different model or provider
+
+Set `OPENAI_MODEL`, and `OPENAI_BASE_URL` for any OpenAI-compatible endpoint.
+
+## Optional: Python intent service
 
 ```bash
 cd server-python
@@ -24,27 +42,15 @@ python -m venv .venv
 source .venv/bin/activate      # Windows: .venv\Scripts\activate
 pip install -r requirements.txt
 uvicorn app.main:app --reload  # http://localhost:8000
-```
-
-The intent service classifies each student message (explain, example, practice, check answer, motivation, other) and injects a routing hint into the system prompt. If the service is not running, the frontend works identically — no errors, no hint.
-
-## Running tests
-
-### Python classifier tests
-
-```bash
-cd server-python
-source .venv/bin/activate
 pytest -v
 ```
 
-### Frontend build check
+Then add `VITE_INTENT_SERVICE_URL=http://localhost:8000/classify` to `.env`. Without it, the same rules run in the browser (`src/lib/intent.js`).
 
-```bash
-npm run build     # production build
-npm run lint      # ESLint
-```
+## Deploying to Vercel
 
-## Architecture overview
+1. Import the repository (framework preset: Vite).
+2. Add `OPENAI_API_KEY` in **Settings → Environment Variables**.
+3. Deploy. `api/chat.js` runs as a serverless function.
 
-See [ARCHITECTURE.md](ARCHITECTURE.md) for the full system diagram, prompt pipeline, and state management.
+See [ARCHITECTURE.md](ARCHITECTURE.md) for how the pieces fit together.

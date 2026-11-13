@@ -23,7 +23,12 @@ export default defineConfig([
       },
     },
     rules: {
-      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]' }],
+      'no-unused-vars': ['error', { varsIgnorePattern: '^[A-Z_]', argsIgnorePattern: '^[A-Z_]' }],
     },
+  },
+  {
+    // Server-side code, config and tests run in Node.
+    files: ['server/**/*.js', 'api/**/*.js', 'tests/**/*.js', '*.config.js'],
+    languageOptions: { globals: globals.node },
   },
 ])
