@@ -15,7 +15,7 @@ npm run dev             # http://localhost:5173 (includes the /api/chat backend)
 | Command           | Purpose                                    |
 |-------------------|--------------------------------------------|
 | `npm run dev`     | Vite dev server + `/api/chat` middleware   |
-| `npm test`        | Vitest (quest engine, prompts, server)     |
+| `npm test`        | Vitest: logic, server endpoint, UI (jsdom) |
 | `npm run lint`    | ESLint                                     |
 | `npm run build`   | Production build to `dist/`                |
 | `npm run preview` | Preview the build (backend included)       |
@@ -35,7 +35,7 @@ Only used when `VITE_INTENT_SERVICE_URL` is set; otherwise `src/lib/intent.js` (
 - **Styling:** Tailwind CSS 3.4, theme tokens as CSS variables in `src/index.css` (class-based dark mode, dark by default)
 - **AI:** OpenAI SDK, called only from the server (`server/chat.js`), streaming. Model from `OPENAI_MODEL` (default `gpt-4o-mini`)
 - **Math/Markdown:** react-markdown + remark-gfm + remark-math + rehype-katex
-- **Tests:** Vitest
+- **Tests:** Vitest; UI tests use React Testing Library + jsdom
 - **Icons:** lucide-react
 
 ## Folder structure
@@ -77,7 +77,9 @@ src/
   utils/
     api.js             # Browser client for /api/chat
     intentService.js   # Optional Python intent service, falls back to lib/intent.js
-tests/                 # Vitest suites
+tests/                 # Vitest suites: *.test.js run in Node (logic, server);
+                       # ui/*.test.jsx run in jsdom (components, whole-app flows)
+.github/workflows/     # CI: lint, test, build on pull requests
 server-python/         # Optional FastAPI intent classifier
 docs/screenshots/      # README images
 ```
@@ -105,3 +107,4 @@ docs/screenshots/      # README images
 - **Persistence keys:** `sveti-messages-{subject}`, `sveti-learning-style`, `sveti-subject`, `sveti-theme`, `sveti-game-prefs`, `sveti-game-asked`, `sveti-progress`.
 - **Subjects:** `algebra` and `english` (the id is `english` everywhere).
 - After changing game packs or builders, run `npm test` — it generates thousands of quests and checks each.
+- **UI tests** start with `// @vitest-environment jsdom`, replace `fetch` (see `mockBackend` in `tests/ui/App.test.jsx`) and find elements by role/label, so keep accessible names stable.

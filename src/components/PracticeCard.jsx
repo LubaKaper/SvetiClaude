@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { Check, ChevronRight, Eye, Lightbulb, MessageCircle, RefreshCw, X } from 'lucide-react'
 import Markdown from './Markdown'
 import { checkAnswer } from '../lib/quests'
@@ -32,6 +32,16 @@ export default function PracticeCard({ item, initial = null, onFinish, onNext, o
   const [result, setResult] = useState(initial ? (initial.outcome === 'solved' ? 'correct' : 'revealed') : null)
   const [earned, setEarned] = useState(initial?.xp || 0)
 
+  const fieldRef = useRef(null)
+
+  // Shake the answer box on a miss. Done with the Web Animations API so the
+  // input is never remounted and keeps keyboard focus for the next try.
+  const shake = () =>
+    fieldRef.current?.animate?.(
+      [0, -5, 5, -5, 5, 0].map((x) => ({ transform: `translateX(${x}px)` })),
+      { duration: 320, easing: 'ease-in-out' },
+    )
+
   const done = result === 'correct' || result === 'revealed'
   const maxHints = item.hints.length
   const isChoice = item.kind === 'choice'
@@ -48,11 +58,15 @@ export default function PracticeCard({ item, initial = null, onFinish, onNext, o
     e.preventDefault()
     if (done || !input.trim()) return
     const { ok, parsed } = checkAnswer(item, input)
-    if (parsed === null) return setResult('unreadable')
+    if (parsed === null) {
+      shake()
+      return setResult('unreadable')
+    }
     const tries = attempts + 1
     setAttempts(tries)
-    if (ok) finish('solved', tries)
-    else setResult('wrong')
+    if (ok) return finish('solved', tries)
+    shake()
+    setResult('wrong')
   }
 
   const choose = (index) => {
@@ -119,9 +133,9 @@ export default function PracticeCard({ item, initial = null, onFinish, onNext, o
             <p className={`mt-3 font-display font-bold ${embedded ? 'text-base' : 'text-lg'}`}>{item.ask}</p>
             <form onSubmit={submitNumber} className="mt-4 flex flex-wrap items-center gap-2">
               <div
-                key={attempts + (result === 'unreadable' ? 'u' : '')}
+                ref={fieldRef}
                 className={`flex min-w-0 flex-1 items-center rounded-xl border bg-bg px-3 transition focus-within:border-accent/70 ${
-                  result === 'wrong' || result === 'unreadable' ? 'animate-shake border-bad/60' : 'border-line'
+                  result === 'wrong' || result === 'unreadable' ? 'border-bad/60' : 'border-line'
                 }`}
               >
                 <input

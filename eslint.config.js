@@ -28,7 +28,7 @@ export default defineConfig([
   },
   {
     // Server-side code, config and tests run in Node.
-    files: ['server/**/*.js', 'api/**/*.js', 'tests/**/*.js', '*.config.js'],
+    files: ['server/**/*.js', 'api/**/*.js', 'tests/**/*.{js,jsx}', '*.config.js'],
     languageOptions: { globals: globals.node },
   },
 ])

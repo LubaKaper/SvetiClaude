@@ -51,6 +51,8 @@ export default defineConfig(({ mode }) => ({
   plugins: [react(), svetiApi(mode)],
   test: {
     environment: 'node',
-    include: ['tests/**/*.test.js'],
+    // Logic tests run in Node; UI tests opt into jsdom with a file-level comment.
+    include: ['tests/**/*.test.{js,jsx}'],
+    setupFiles: ['tests/setup.js'],
   },
 }))

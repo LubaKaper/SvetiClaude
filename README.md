@@ -128,7 +128,7 @@ OPENAI_API_KEY=sk-...
 | Command | What it does |
 |---|---|
 | `npm run dev` | Dev server, including the `/api/chat` backend |
-| `npm test` | Run the test suite (Vitest) |
+| `npm test` | Run the test suite (Vitest): logic, the server endpoint, and the UI |
 | `npm run lint` | ESLint |
 | `npm run build` | Production build to `dist/` |
 | `npm run preview` | Serve the production build, with the backend |
@@ -184,7 +184,7 @@ You pick the numbers and tell the story; the builders in `src/lib/builders.js` p
 - **Frontend:** React 19, Vite 7, Tailwind CSS 3.4, lucide-react
 - **Math & Markdown:** react-markdown, remark-math, KaTeX, GitHub-flavoured tables
 - **Backend:** one Node serverless function using the OpenAI SDK, with streaming
-- **Tests:** Vitest
+- **Tests:** Vitest + React Testing Library, run on every pull request by GitHub Actions
 - **Optional:** a FastAPI rule-based intent classifier in [`server-python/`](server-python/)
 
 ## Project layout
@@ -207,7 +207,7 @@ src/
     intent.js          Intent + topic detection
     localTutor.js      Demo-mode replies
   hooks/               useChat, useGamePrefs, useProgress, useLocalStorage
-tests/                 Vitest suites
+tests/                 Logic, server and UI test suites
 server-python/         Optional FastAPI intent service
 ```
 

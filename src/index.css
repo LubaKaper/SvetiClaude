@@ -169,12 +169,6 @@
 }
 .animate-pop { animation: pop 0.32s ease-out both; }
 
-@keyframes shake {
-  20%, 60% { transform: translateX(-5px); }
-  40%, 80% { transform: translateX(5px); }
-}
-.animate-shake { animation: shake 0.32s ease-in-out; }
-
 @keyframes blink {
   50% { opacity: 0; }
 }

@@ -18,6 +18,7 @@
 - [x] Per-topic solved counts
 - [x] Basic per-IP rate limiting on `/api/chat`
 - [x] New logo
+- [x] UI tests (components and whole-app flows), server endpoint tests, CI workflow
 
 ## High priority
 
@@ -32,7 +33,6 @@
 - [ ] More English drill skills (apostrophes, sentence fragments, evidence for a thesis) and difficulty levels
 - [ ] A progress page with mastery per topic (the data is already recorded)
 - [ ] Sync progress across devices (needs accounts)
-- [ ] Component tests with React Testing Library
 - [ ] Code-split KaTeX to shrink the initial bundle
 
 ## Later
