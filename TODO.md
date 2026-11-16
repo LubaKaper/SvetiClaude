@@ -10,18 +10,27 @@
 - [x] Tests (Vitest) for the quest engine, prompts and server validation
 - [x] English subject now uses the English prompt (it was silently falling back to algebra)
 
+## Done in v1.1
+
+- [x] Tutor can place live quests in the chat and sees the results
+- [x] Tutor sees the student's practice record
+- [x] English drills (confusing words, commas, agreement, thesis)
+- [x] Per-topic solved counts
+- [x] Basic per-IP rate limiting on `/api/chat`
+- [x] New logo
+
 ## High priority
 
 - [ ] **Rotate the old OpenAI key.** Earlier deployments bundled `VITE_OPENAI_API_KEY` into the browser, so treat that key as public. Create a new one and set it as `OPENAI_API_KEY` in Vercel.
-- [ ] **Rate-limit `/api/chat`** (per IP, e.g. Upstash or Vercel KV) so a public deployment can't run up the bill.
+- [ ] **Make the rate limit durable.** The current limiter is in memory per server instance. Move the counters to a shared store (Upstash Redis / Vercel KV) for a hard cap, and consider a daily spend limit in the OpenAI dashboard.
+- [ ] **Try the tutor with a real key** and tune the prompt: check that it uses the game fact sheets accurately and uses quest markers sensibly.
 
 ## Next
 
 - [ ] More game packs (EA FC, Among Us, League of Legends, Animal Crossing, Hollow Knight…)
 - [ ] More quest topics: inequalities, exponents, quadratics, graphing
-- [ ] Have the AI tutor hand out quests in chat and see quest results (so it knows what the student struggles with)
-- [ ] English "quests": grammar fixes and thesis-building with game-themed sentences
-- [ ] Per-topic mastery tracking and a simple progress page
+- [ ] More English drill skills (apostrophes, sentence fragments, evidence for a thesis) and difficulty levels
+- [ ] A progress page with mastery per topic (the data is already recorded)
 - [ ] Sync progress across devices (needs accounts)
 - [ ] Component tests with React Testing Library
 - [ ] Code-split KaTeX to shrink the initial bundle

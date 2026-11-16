@@ -43,15 +43,23 @@ export default function App() {
   const firstRun = !asked && games.length === 0
 
   const progress = useProgress()
-  const chat = useChat({ subject, learningStyle, games })
+  const chat = useChat({ subject, learningStyle, games, progress })
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme !== 'light')
   }, [theme])
 
-  // Quests are algebra practice; in English the app is chat-only.
-  const questsAvailable = subject === 'algebra'
-  const activeView = questsAvailable ? view : 'chat'
+  // An exercise the tutor placed in the chat was finished: save the result on
+  // the message (so it stays finished after a reload) and count it as progress.
+  const { setQuestResult } = chat
+  const { record } = progress
+  const onQuestFinish = useCallback(
+    (message, part, result) => {
+      setQuestResult(message.id, part.index, result)
+      record({ topic: part.topic, level: part.level, game: message.game || '', ...result })
+    },
+    [setQuestResult, record],
+  )
 
   const closePicker = useCallback(() => {
     setPickerOpen(false)
@@ -69,7 +77,7 @@ export default function App() {
 
   const tabs = [
     { id: 'chat', label: 'Chat', icon: MessageCircle },
-    ...(questsAvailable ? [{ id: 'quests', label: 'Quests', icon: Swords }] : []),
+    { id: 'quests', label: 'Quests', icon: Swords },
   ]
 
   return (
@@ -106,9 +114,9 @@ export default function App() {
                 key={id}
                 type="button"
                 onClick={() => setView(id)}
-                aria-current={activeView === id ? 'page' : undefined}
+                aria-current={view === id ? 'page' : undefined}
                 className={`inline-flex items-center gap-1.5 rounded-lg px-3 py-1.5 text-sm font-semibold transition ${
-                  activeView === id ? 'bg-raised text-fg' : 'text-muted hover:text-fg'
+                  view === id ? 'bg-raised text-fg' : 'text-muted hover:text-fg'
                 }`}
               >
                 <Icon size={15} /> {label}
@@ -122,7 +130,7 @@ export default function App() {
 
           <div className="ml-auto flex items-center gap-1.5">
             <StatusPill status={chat.status} />
-            {activeView === 'chat' && chat.messages.length > 0 && (
+            {view === 'chat' && chat.messages.length > 0 && (
               <button type="button" onClick={clearChat} className="icon-btn" aria-label="Clear conversation" title="Clear conversation">
                 <Trash2 size={17} />
               </button>
@@ -130,10 +138,10 @@ export default function App() {
           </div>
         </header>
 
-        {activeView === 'quests' ? (
-          <QuestView packs={packs} progress={progress} onAskSveti={askSveti} onPickGames={() => setPickerOpen(true)} />
+        {view === 'quests' ? (
+          <QuestView subject={subject} packs={packs} progress={progress} onAskSveti={askSveti} onPickGames={() => setPickerOpen(true)} />
         ) : (
-          <ChatView chat={chat} subject={subject} packs={packs} draft={draft} onPickGames={() => setPickerOpen(true)} />
+          <ChatView chat={chat} subject={subject} packs={packs} draft={draft} onPickGames={() => setPickerOpen(true)} onQuestFinish={onQuestFinish} />
         )}
       </main>
 

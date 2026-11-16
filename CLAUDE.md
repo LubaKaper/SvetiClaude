@@ -53,22 +53,26 @@ src/
     Message.jsx        # One message bubble
     Markdown.jsx       # Markdown + KaTeX renderer
     InputArea.jsx      # Composer with quick-action chips
-    QuestView.jsx      # Practice quests: topic/game/difficulty, hints, checking
+    QuestView.jsx      # Quests page: topic / game / difficulty pickers
+    PracticeCard.jsx   # One exercise (typed answer or multiple choice); also embedded in chat
     GamePicker.jsx     # Modal for choosing up to 3 games
     Logo.jsx           # Spark mark, avatar, wordmark
   config/
-    games.js           # Game packs: facts, starters, quest scenarios; game-name helpers
+    games.js           # Game packs: facts, starters, quest scenarios, drill vocabulary; game-name helpers
     prompts.js         # Subjects, quick actions, buildSystemPrompt()
     learningStyles.js  # 5 learning styles + prompts
   lib/
     builders.js        # Problem builders: answer + hints + worked solution
-    quests.js          # generateQuest, parseAnswer, checkAnswer, questXp
+    quests.js          # Algebra: generateQuest, parseAnswer, checkAnswer, questXp
+    drills.js          # English: generateDrill (multiple-choice grammar/thesis)
+    practice.js        # makePractice for any topic, [[quest:…]] chat markers, practice record
+    rng.js             # Seeded RNG + string hash
     intent.js          # Rule-based intent + topic detection
     localTutor.js      # Demo-mode chat replies (no AI key)
   hooks/
     useChat.js         # Chat state, streaming, demo-mode fallback
     useGamePrefs.js    # Favorite games
-    useProgress.js     # XP, level, streak
+    useProgress.js     # XP, level, streak, per-topic record
     useLocalStorage.js # Persistent state hook
   utils/
     api.js             # Browser client for /api/chat
@@ -93,6 +97,7 @@ docs/screenshots/      # README images
 
 - **The key never reaches the browser.** The client sends structured choices to `/api/chat`; the system prompt is built on the server.
 - **Quest math is deterministic code, never AI.** Game packs choose numbers and tell the story; `lib/builders.js` computes answers, hints and solutions.
+- **Chat exercises are markers.** The tutor writes `[[quest:topic:level]]`; `Message.jsx` renders a `PracticeCard`, seeded from the message id so it is stable. Results are stored on the message (`questResults`) and replayed to the AI by `contentForAi()`.
 - **Game facts must be real.** Only put mechanics and numbers in a fact sheet or scenario that are accurate for the game.
 - **Shared modules use explicit `.js` import extensions** (`config/`, `lib/`) because the server imports them under plain Node.
 - **Styling:** Tailwind utilities with semantic colors (`bg`, `panel`, `raised`, `line`, `fg`, `muted`, `accent`, `good`, `bad`). No hard-coded grays.

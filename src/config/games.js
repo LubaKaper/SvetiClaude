@@ -42,6 +42,17 @@ export const GAMES = [
       'Help me build a thesis: is Survival or Creative mode better?',
       'Help me describe my best base using vivid sensory details',
     ],
+    // Words for the English drills: a plural item, a place (with its preposition),
+    // plural creatures/opponents, and two arguable thesis statements.
+    lex: {
+      items: "diamonds",
+      at: "in the Nether",
+      mobs: "creepers",
+      claims: [
+        "Minecraft's Survival mode teaches planning because every night punishes players who did not prepare",
+        "Creative mode is the better place to learn building because unlimited blocks let players experiment without fear of losing progress",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const a = r.by(r.int(2, 5), r.int(4, 9), r.int(7, 15))
@@ -118,6 +129,15 @@ export const GAMES = [
       'Help me argue: is building or zero-build the better mode?',
       'Help me write a tense story about the final storm circle',
     ],
+    lex: {
+      items: "shield potions",
+      at: "in the storm",
+      mobs: "opponents",
+      claims: [
+        "Zero Build is the better mode for new players because it rewards aim and positioning instead of building speed",
+        "Landing away from crowded spots is the smarter strategy because surviving the early game matters more than early eliminations",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const a = r.by(r.pick([1, 2]), r.pick([2, 5]), r.pick([5, 8]))
@@ -196,6 +216,15 @@ export const GAMES = [
       'Help me write a persuasive pitch for a game I want to build',
       'Help me outline a review of my favorite experience',
     ],
+    lex: {
+      items: "game passes",
+      at: "in the obby",
+      mobs: "other players",
+      claims: [
+        "Roblox turns players into creators because anyone can publish a game that others actually play",
+        "Obbies are the best games for beginners because checkpoints let players fail without starting over",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const a = r.by(450, r.pick([450, 1000]), r.pick([450, 1000, 2200]))
@@ -273,6 +302,15 @@ export const GAMES = [
       'Help me argue which starter is the best choice',
       'Help me write a character sketch of a rival trainer',
     ],
+    lex: {
+      items: "Poké Balls",
+      at: "in the tall grass",
+      mobs: "wild Pokémon",
+      claims: [
+        "A balanced team beats a team of favorites because type matchups decide most battles",
+        "The starter choice matters less than players think because any team can be rebuilt by the third gym",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const b = r.by(0, r.pick([300, 600]), r.pick([700, 1500, 2100]))
@@ -346,6 +384,15 @@ export const GAMES = [
       'Help me analyze the theme of courage in the story',
       'Help me describe Hyrule so a reader can picture it',
     ],
+    lex: {
+      items: "rupees",
+      at: "in Hyrule",
+      mobs: "Bokoblins",
+      claims: [
+        "Breath of the Wild makes exploring rewarding because curiosity is almost always repaid with a discovery",
+        "Breakable weapons improve the game because they push players to try tools they would otherwise ignore",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const x = r.by(r.int(2, 6), r.int(5, 12), r.int(10, 27))
@@ -418,6 +465,15 @@ export const GAMES = [
       'Help me argue whether the Blue Shell is fair',
       'Help me write a play-by-play of a photo-finish race',
     ],
+    lex: {
+      items: "coins",
+      at: "on Rainbow Road",
+      mobs: "other racers",
+      claims: [
+        "The Blue Shell keeps races exciting because no lead is ever completely safe",
+        "Lighter characters suit beginners because quick acceleration forgives the crashes new players make",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const b = r.by(0, r.pick([9, 10, 12]), r.pick([19, 21, 22, 27]))
@@ -493,6 +549,15 @@ export const GAMES = [
       'Help me explain a mechanic to a beginner in clear steps',
       'Help me write a persuasive case for good teamwork over solo plays',
     ],
+    lex: {
+      items: "boost pads",
+      at: "in the arena",
+      mobs: "opponents",
+      claims: [
+        "Rotation matters more than mechanics because a team out of position cannot defend its goal",
+        "Free play is the fastest way to improve because it lets players repeat one skill hundreds of times",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const x = r.by(r.int(1, 3), r.int(2, 4), r.int(3, 5))
@@ -568,6 +633,15 @@ export const GAMES = [
       'Help me describe a season on the farm with strong imagery',
       'Help me compare two villagers in a short essay',
     ],
+    lex: {
+      items: "parsnips",
+      at: "in Pelican Town",
+      mobs: "villagers",
+      claims: [
+        "Stardew Valley is relaxing because it lets players set their own goals and their own pace",
+        "The first spring is the hardest season because players have little energy, money, or tools",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const b = r.by(0, r.int(2, 10) * 20, r.int(10, 50) * 15)
@@ -644,6 +718,15 @@ export const GAMES = [
       'Help me analyze how a character changes over their story quest',
       'Help me describe a region of Teyvat with strong imagery',
     ],
+    lex: {
+      items: "Primogems",
+      at: "in Teyvat",
+      mobs: "Hilichurls",
+      claims: [
+        "Elemental Reactions make team building strategic because the right pair of elements beats raw power",
+        "Exploration is the most rewarding part of the game because the world hides a reward behind nearly every landmark",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const wishes = r.by(r.int(1, 3), r.int(3, 8), r.int(8, 20))
@@ -720,6 +803,15 @@ export const GAMES = [
       'Help me argue which agent role matters most to a team',
       'Help me write clear callouts — concise, precise language',
     ],
+    lex: {
+      items: "credits",
+      at: "at the bomb site",
+      mobs: "opponents",
+      claims: [
+        "Economy management wins matches because a team that buys together fights together",
+        "Communication beats raw aim because five players sharing information can trap a stronger opponent",
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const [gear, c] = r.by(['a Sheriff', 800], r.pick([['a Spectre', 1600], ['a Vandal', 2900]]), r.pick([['a Vandal with Heavy Shields', 3900], ['an Operator', 4700]]))
@@ -796,6 +888,15 @@ export function genericPack(name = '') {
       `Help me write a persuasive review of ${game}`,
       `Help me describe the world of ${game} with strong imagery`,
     ],
+    lex: {
+      items: 'coins',
+      at: 'in the final level',
+      mobs: 'enemies',
+      claims: [
+        `${name || 'This game'} rewards patience because its hardest challenges can only be beaten by learning from failure`,
+        `${name || 'This game'} is worth replaying because each run teaches something the last one did not`,
+      ],
+    },
     scenarios: {
       linear: (r) => {
         const a = r.by(r.int(2, 9), r.int(5, 20), r.int(12, 45))

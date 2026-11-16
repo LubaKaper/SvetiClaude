@@ -62,7 +62,37 @@ export function parseRequest(body) {
     action: typeof body.action === 'string' && SUBJECTS[subject].actions[body.action] ? body.action : null,
     intent: typeof body.intent === 'string' ? body.intent.slice(0, 40) : null,
     games: normalizeGamePrefs(body.games),
+    practice: body.practice && typeof body.practice === 'object' ? body.practice : null,
   }
+}
+
+/**
+ * Best-effort rate limit: a sliding window per client IP, held in memory.
+ * On serverless this is per warm instance, so it slows down abuse rather than
+ * guaranteeing a hard cap — use a shared store (e.g. Redis) for that.
+ */
+const RATE_WINDOW_MS = 5 * 60 * 1000
+const RATE_MAX = 30
+const hits = new Map()
+
+export function rateLimit(ip, now = Date.now(), { max = RATE_MAX, windowMs = RATE_WINDOW_MS } = {}) {
+  const recent = (hits.get(ip) || []).filter((t) => now - t < windowMs)
+  if (recent.length >= max) {
+    hits.set(ip, recent)
+    return { ok: false, retryAfter: Math.ceil((recent[0] + windowMs - now) / 1000) }
+  }
+  recent.push(now)
+  hits.set(ip, recent)
+  if (hits.size > 5000) {
+    for (const [key, times] of hits) if (now - times[times.length - 1] > windowMs) hits.delete(key)
+  }
+  return { ok: true, retryAfter: 0 }
+}
+
+function clientIp(req) {
+  const forwarded = req.headers?.['x-forwarded-for']
+  const first = (Array.isArray(forwarded) ? forwarded[0] : forwarded || '').split(',')[0].trim()
+  return first || req.socket?.remoteAddress || 'unknown'
 }
 
 function friendlyError(error) {
@@ -126,6 +156,14 @@ export async function handleChat(req, res, body, env = process.env) {
 
   if (req.method === 'GET') return json(200, getStatus(env))
   if (req.method !== 'POST') return json(405, { error: 'Method not allowed.' })
+
+  if (getStatus(env).live) {
+    const limit = rateLimit(clientIp(req))
+    if (!limit.ok) {
+      res.setHeader('Retry-After', String(limit.retryAfter))
+      return json(429, { error: `You're sending messages very quickly. Take a breather and try again in ${Math.ceil(limit.retryAfter / 60)} min — Quests still work in the meantime.` })
+    }
+  }
 
   const abort = new AbortController()
   res.on('close', () => abort.abort())

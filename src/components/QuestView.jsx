@@ -1,15 +1,14 @@
 import { useMemo, useState } from 'react'
-import { Check, ChevronRight, Divide, Equal, Eye, Flame, Lightbulb, MessageCircle, Percent, RefreshCw, TrendingUp, Variable, X } from 'lucide-react'
-import Markdown from './Markdown'
+import { Divide, Equal, Flame, Percent, PenLine, Quote, Scale, TrendingUp, Variable, WholeWord } from 'lucide-react'
+import PracticeCard from './PracticeCard'
 import { genericPack } from '../config/games'
-import { LEVELS, TOPICS, checkAnswer, generateQuest, questToPrompt, questXp } from '../lib/quests'
+import { LEVELS } from '../lib/quests'
+import { makePractice, practiceToPrompt, topicsFor } from '../lib/practice'
 
-const TOPIC_ICONS = { linear: Equal, percent: Percent, ratio: Divide, fn: TrendingUp, system: Variable }
-
-const CHEERS = ['Nailed it!', 'GG!', 'Clean solve!', 'Critical hit!', 'Level cleared!']
-
-const formatAnswer = (quest) =>
-  `${quest.answer.toLocaleString('en-US')}${quest.unit === '%' ? '%' : ` ${quest.unit}`}`
+const TOPIC_ICONS = {
+  linear: Equal, percent: Percent, ratio: Divide, fn: TrendingUp, system: Variable,
+  homophones: WholeWord, commas: Quote, agreement: Scale, thesis: PenLine,
+}
 
 function Segmented({ options, value, onChange, label }) {
   return (
@@ -32,64 +31,32 @@ function Segmented({ options, value, onChange, label }) {
 }
 
 /**
- * Quests: game-themed practice problems generated and checked locally.
- * Hints cost a little XP, revealing the solution costs the streak.
+ * Quests: practice generated and checked locally, set inside the player's
+ * games. Algebra gets typed-answer problems in three difficulties; English
+ * gets multiple-choice grammar and thesis drills.
  */
-export default function QuestView({ packs, progress, onAskSveti, onPickGames }) {
+export default function QuestView({ subject, packs, progress, onAskSveti, onPickGames }) {
+  const topics = topicsFor(subject)
   const choices = packs.length ? packs : [genericPack()]
   const [gameName, setGameName] = useState(choices[0].name)
-  const [topic, setTopic] = useState('linear')
+  const [picked, setPicked] = useState({}) // chosen topic per subject
   const [level, setLevel] = useState(1)
   const [round, setRound] = useState(0)
 
+  const topic = topics.some((t) => t.id === picked[subject]) ? picked[subject] : topics[0].id
   // If the selected game was removed in the picker, fall back to the first one.
   const activeGame = choices.find((p) => p.name === gameName) || choices[0]
+  const isAlgebra = subject === 'algebra'
 
-  const quest = useMemo(
-    () => generateQuest({ game: activeGame.custom && activeGame.id === 'generic' ? '' : activeGame.name, topic, level }),
-    // `round` re-rolls the quest on demand.
+  const item = useMemo(
+    () => makePractice({ game: activeGame.id === 'generic' ? '' : activeGame.name, topic, level: isAlgebra ? level : 1 }),
+    // `round` re-rolls the exercise on demand.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [activeGame.name, topic, level, round],
+    [activeGame.name, topic, level, isAlgebra, round],
   )
 
-  const [input, setInput] = useState('')
-  const [hints, setHints] = useState(0)
-  const [attempts, setAttempts] = useState(0)
-  const [result, setResult] = useState(null) // null | 'wrong' | 'unreadable' | 'correct' | 'revealed'
-  const [earned, setEarned] = useState(0)
-  const [questId, setQuestId] = useState(quest.id)
-
-  // Fresh quest -> fresh attempt state (reset during render, no effect needed).
-  if (questId !== quest.id) {
-    setQuestId(quest.id)
-    setInput('')
-    setHints(0)
-    setAttempts(0)
-    setResult(null)
-    setEarned(0)
-  }
-
-  const done = result === 'correct' || result === 'revealed'
-  const next = () => setRound((r) => r + 1)
-
-  const submit = (e) => {
-    e.preventDefault()
-    if (done || !input.trim()) return
-    const { ok, parsed } = checkAnswer(quest, input)
-    if (parsed === null) return setResult('unreadable')
-    const tries = attempts + 1
-    setAttempts(tries)
-    if (!ok) return setResult('wrong')
-    const xp = questXp({ level: quest.level, hintsUsed: hints, attempts: tries })
-    setEarned(xp)
-    setResult('correct')
-    progress.award(xp)
-  }
-
-  const reveal = () => {
-    setResult('revealed')
-    progress.breakStreak()
-  }
+  const finish = (result) =>
+    progress.record({ topic: item.topic, level: item.level, game: item.game.name, ...result })
 
   return (
     <div className="scroll-thin flex-1 overflow-y-auto">
@@ -97,7 +64,9 @@ export default function QuestView({ packs, progress, onAskSveti, onPickGames }) 
         <div className="flex flex-wrap items-end justify-between gap-3">
           <div>
             <h1 className="font-display text-2xl font-bold tracking-tight">Quests</h1>
-            <p className="mt-1 text-sm text-muted">Algebra practice set inside your games. Answers are checked instantly.</p>
+            <p className="mt-1 text-sm text-muted">
+              {isAlgebra ? 'Algebra practice set inside your games.' : 'Grammar and thesis drills built from your games.'} Answers are checked instantly.
+            </p>
           </div>
           <div className="flex items-center gap-2 text-sm">
             <span className="inline-flex items-center gap-1.5 rounded-full border border-line bg-panel px-3 py-1.5 font-semibold" title="Current streak">
@@ -111,15 +80,16 @@ export default function QuestView({ packs, progress, onAskSveti, onPickGames }) 
         </div>
 
         {/* Topic */}
-        <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-5" role="group" aria-label="Topic">
-          {TOPICS.map((t) => {
+        <div className={`mt-5 grid grid-cols-2 gap-2 ${isAlgebra ? 'sm:grid-cols-5' : 'sm:grid-cols-4'}`} role="group" aria-label="Topic">
+          {topics.map((t) => {
             const Icon = TOPIC_ICONS[t.id]
             const on = topic === t.id
+            const stats = progress.topics[t.id]
             return (
               <button
                 key={t.id}
                 type="button"
-                onClick={() => setTopic(t.id)}
+                onClick={() => setPicked((p) => ({ ...p, [subject]: t.id }))}
                 aria-pressed={on}
                 className={`rounded-2xl border p-3 text-left transition ${
                   on ? 'border-accent bg-accent/10 shadow-glow' : 'border-line bg-panel hover:border-accent/50'
@@ -127,6 +97,7 @@ export default function QuestView({ packs, progress, onAskSveti, onPickGames }) 
               >
                 <Icon size={18} className={on ? 'text-accent-text' : 'text-muted'} />
                 <div className="mt-2 text-[13px] font-semibold leading-tight">{t.name}</div>
+                <div className="mt-1 text-[11px] text-muted">{stats?.solved ? `${stats.solved} solved` : 'New'}</div>
               </button>
             )
           })}
@@ -153,124 +124,18 @@ export default function QuestView({ packs, progress, onAskSveti, onPickGames }) 
               {packs.length ? 'Change games' : '+ Pick your games'}
             </button>
           </div>
-          <Segmented options={LEVELS} value={level} onChange={setLevel} label="Difficulty" />
+          {isAlgebra && <Segmented options={LEVELS} value={level} onChange={setLevel} label="Difficulty" />}
         </div>
 
-        {/* Quest card */}
-        <section key={quest.id} data-quest={quest.id} className="card mt-4 animate-rise overflow-hidden" aria-label="Current quest">
-          <div className="h-1.5" style={{ backgroundColor: quest.game.tint }} />
-          <div className="p-5 sm:p-6">
-            <div className="flex items-center justify-between gap-3">
-              <span className="label">
-                {quest.game.emoji} {quest.game.name} · {TOPICS.find((t) => t.id === quest.topic).name}
-              </span>
-              <span className="label">up to {questXp({ level: quest.level })} XP</span>
-            </div>
-
-            <Markdown className="mt-3 text-[16px]">{quest.story}</Markdown>
-            <p className="mt-3 font-display text-lg font-bold">{quest.ask}</p>
-
-            <form onSubmit={submit} className="mt-4 flex flex-wrap items-center gap-2">
-              <label htmlFor="quest-answer" className="sr-only">
-                Your answer
-              </label>
-              <div
-                className={`flex min-w-0 flex-1 items-center rounded-xl border bg-bg px-3 transition focus-within:border-accent/70 ${
-                  result === 'wrong' || result === 'unreadable' ? 'animate-shake border-bad/60' : 'border-line'
-                }`}
-                key={attempts + (result === 'unreadable' ? 'u' : '')}
-              >
-                <input
-                  id="quest-answer"
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  disabled={done}
-                  inputMode="decimal"
-                  autoComplete="off"
-                  placeholder="Your answer"
-                  className="h-11 min-w-0 flex-1 bg-transparent text-base font-semibold text-fg placeholder:font-normal placeholder:text-muted focus:outline-none"
-                />
-                <span className="ml-2 shrink-0 text-sm text-muted">{quest.unit}</span>
-              </div>
-              <button type="submit" disabled={done || !input.trim()} className="btn-primary h-11">
-                Check
-              </button>
-            </form>
-
-            {/* Feedback */}
-            <div aria-live="polite">
-              {result === 'unreadable' && (
-                <p className="mt-3 flex items-center gap-2 text-sm text-bad">
-                  <X size={16} /> I couldn&apos;t read a number in that. Try something like <strong>12</strong> or <strong>x = 12</strong>.
-                </p>
-              )}
-              {result === 'wrong' && (
-                <p className="mt-3 flex items-center gap-2 text-sm text-bad">
-                  <X size={16} /> Not quite{attempts > 1 ? ' yet' : ''} — check your setup and try again{hints < 3 ? ', or grab a hint' : ''}.
-                </p>
-              )}
-              {result === 'correct' && (
-                <div className="mt-4 flex animate-pop flex-wrap items-center justify-between gap-3 rounded-xl border border-good/40 bg-good/10 px-4 py-3">
-                  <p className="flex items-center gap-2 font-semibold text-good">
-                    <Check size={18} strokeWidth={3} /> {CHEERS[Math.round(quest.answer + attempts) % CHEERS.length]} {formatAnswer(quest)}{quest.also ? ` ${quest.also}` : ''}
-                  </p>
-                  <span className="font-display text-lg font-bold tabular-nums text-accent-text">+{earned} XP</span>
-                </div>
-              )}
-              {result === 'revealed' && (
-                <p className="mt-4 rounded-xl border border-line bg-raised px-4 py-3 text-sm">
-                  The answer is <strong>{formatAnswer(quest)}</strong>{quest.also ? ` (${quest.also})` : ''}. Study the steps below, then try a fresh one.
-                </p>
-              )}
-            </div>
-
-            {/* Hints */}
-            {hints > 0 && !done && (
-              <ol className="mt-4 space-y-2">
-                {quest.hints.slice(0, hints).map((hint, i) => (
-                  <li key={i} className="flex animate-rise gap-2.5 rounded-xl border border-accent/25 bg-accent/5 px-3.5 py-2.5 text-sm">
-                    <Lightbulb size={16} className="mt-0.5 shrink-0 text-accent-text" />
-                    <Markdown>{hint}</Markdown>
-                  </li>
-                ))}
-              </ol>
-            )}
-
-            {/* Worked solution */}
-            {done && (
-              <div className="mt-4 animate-rise rounded-xl border border-line bg-bg p-4">
-                <div className="label mb-2">How it works</div>
-                <Markdown className="text-[15px]">{quest.steps.map((s, i) => `${i + 1}. ${s}`).join('\n')}</Markdown>
-              </div>
-            )}
-
-            {/* Actions */}
-            <div className="mt-5 flex flex-wrap items-center gap-2 border-t border-line pt-4">
-              {done ? (
-                <button type="button" onClick={next} className="btn-primary" autoFocus>
-                  Next quest <ChevronRight size={16} />
-                </button>
-              ) : (
-                <>
-                  <button type="button" onClick={() => setHints((h) => Math.min(3, h + 1))} disabled={hints >= 3} className="btn-ghost">
-                    <Lightbulb size={16} /> {hints >= 3 ? 'No more hints' : `Hint ${hints + 1} of 3`}
-                  </button>
-                  {(attempts >= 2 || hints >= 3) && (
-                    <button type="button" onClick={reveal} className="btn-ghost">
-                      <Eye size={16} /> Show solution
-                    </button>
-                  )}
-                  <button type="button" onClick={next} className="btn-ghost">
-                    <RefreshCw size={15} /> Skip
-                  </button>
-                </>
-              )}
-              <button type="button" onClick={() => onAskSveti(questToPrompt(quest))} className="btn-ghost ml-auto">
-                <MessageCircle size={16} /> Ask Sveti
-              </button>
-            </div>
-          </div>
-        </section>
+        <div className="mt-4">
+          <PracticeCard
+            key={item.id}
+            item={item}
+            onFinish={finish}
+            onNext={() => setRound((r) => r + 1)}
+            onAskSveti={() => onAskSveti(practiceToPrompt(item))}
+          />
+        </div>
 
         <p className="mt-4 text-center text-xs text-muted">
           {progress.solved} solved · best streak {progress.best} · hints cost a little XP, showing the solution resets your streak

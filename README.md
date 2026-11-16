@@ -31,12 +31,13 @@
 |---|---|
 | 🎮 **Speaks your game** | Pick up to three games. Ten come with hand-written fact sheets (Minecraft, Fortnite, Roblox, Pokémon, Zelda, Mario Kart, Rocket League, Stardew Valley, Genshin Impact, Valorant). Type any other game and the AI uses what it knows about it. |
 | ⚔️ **Quests** | Endless practice problems in five algebra topics and three difficulties, themed to your game. Answers are checked instantly, with a three-step hint ladder and a full worked solution. |
+| 🔗 **Chat and quests work together** | Ask for practice and the tutor drops a live, auto-graded quest right into the conversation. It then sees exactly which problem you got and how you did, and it knows your practice record, so it can step the difficulty up or down. |
 | 💬 **AI tutor chat** | Streaming replies with properly typeset math. It teaches the method instead of handing over answers, and checks your work honestly. |
 | 🧠 **Five learning styles** | Visual, Reading, Examples, Socratic or Stories — the same idea, explained the way you learn best. |
-| ✍️ **English too** | A writing coach that uses your game's world and debates as material, and never writes the essay for you. |
+| ✍️ **English too** | A writing coach that uses your game's world and debates as material, and never writes the essay for you — plus grammar and thesis drills built from your game's vocabulary. |
 | 🔥 **XP, levels and streaks** | Solve quests cleanly to level up. Hints cost a little XP; peeking at the solution costs your streak. |
 | 🔌 **Works without an AI key** | Quests run entirely in the browser. With no key, chat switches to a clearly-labelled demo mode that still teaches with real worked examples. |
-| 🔒 **Key stays on the server** | The browser never sees the API key. |
+| 🔒 **Key stays on the server** | The browser never sees the API key, and the chat endpoint is rate-limited per visitor. |
 
 <div align="center">
 
@@ -63,7 +64,17 @@ A quest isn't "Minecraft" pasted onto a textbook problem. Each game pack knows h
 
 </div>
 
-Quests are generated and graded by plain, deterministic code — not by the AI — so **the answer key is never wrong**. The test suite generates around ten thousand quests across every game, topic and difficulty and checks each one.
+## The tutor hands out quests
+
+<div align="center">
+
+![A quest embedded in the chat](docs/screenshots/chat-quest.png)
+
+</div>
+
+When the tutor wants you to practice, it writes a tiny marker such as `[[quest:ratio:2]]`. The app swaps it for a real exercise in your game. On the next turn the tutor is shown the exact problem, the correct answer and your result (*"solved, 2 attempts, 1 hint"*), so the conversation continues from what actually happened.
+
+Quests are generated and graded by plain, deterministic code — not by the AI — so **the answer key is never wrong**. The test suite generates around fifteen thousand quests and drills across every game, topic and difficulty and checks each one.
 
 ## How it works
 
@@ -80,10 +91,12 @@ flowchart LR
     P --> AI[(AI model)]
     AI -- streamed text --> C
     C -. "no key? demo mode" .-> Q
+    C -- "[[quest:…]] markers" --> Q
+    Q -- "results + practice record" --> C
 ```
 
 1. **Game packs** (`src/config/games.js`) hold everything Sveti knows about a game: a fact sheet of real mechanics, conversation starters, and one quest scenario per algebra topic.
-2. **The quest engine** (`src/lib/`) turns a scenario into a full problem — answer, three hints, worked solution — and checks whatever the student types (`12`, `x = 12`, `1,200 V-Bucks`, `3/4`, `25%` all work).
+2. **The practice engine** (`src/lib/`) turns a scenario into a full problem — answer, three hints, worked solution — and checks whatever the student types (`12`, `x = 12`, `1,200 V-Bucks`, `3/4`, `25%` all work). English drills are multiple choice, built from each game's vocabulary.
 3. **The tutor prompt** (`src/config/prompts.js`) combines the subject persona, the chosen learning style and the fact sheets for the student's games, with rules like *use real mechanics, never invent stats, don't give away homework answers*.
 4. **The backend** (`server/chat.js`, deployed as `api/chat.js`) builds that prompt on the server, calls the model and streams the reply. The browser only sends structured choices, so the endpoint can't be used as a free general-purpose AI proxy.
 5. **Demo mode**: if the server has no key, chat answers come from the quest engine instead, as worked examples in the student's game.
@@ -181,14 +194,16 @@ api/chat.js            Vercel function (thin wrapper)
 server/chat.js         Backend core: validation, prompt, streaming
 src/
   App.jsx              Layout, view switching, theme
-  components/          Sidebar, ChatView, QuestView, GamePicker, Message, …
+  components/          Sidebar, ChatView, QuestView, PracticeCard, GamePicker, Message, …
   config/
     games.js           Game packs: facts, starters, quest scenarios
     prompts.js         Subjects, quick actions, system prompt
     learningStyles.js  The five teaching styles
   lib/
     builders.js        Problem builders (the math + hints + solutions)
-    quests.js          Quest generation, answer checking, XP
+    quests.js          Algebra quest generation, answer checking, XP
+    drills.js          English grammar and thesis drills
+    practice.js        One API for both, chat markers, practice record
     intent.js          Intent + topic detection
     localTutor.js      Demo-mode replies
   hooks/               useChat, useGamePrefs, useProgress, useLocalStorage
@@ -198,7 +213,7 @@ server-python/         Optional FastAPI intent service
 
 ## Roadmap
 
-See [TODO.md](TODO.md). Next up: more game packs, quests for more topics (inequalities, exponents, quadratics), rate limiting on the API, and saved progress across devices.
+See [TODO.md](TODO.md). Next up: more game packs, quests for more topics (inequalities, exponents, quadratics), a shared-store rate limiter, and saved progress across devices.
 
 ---
 

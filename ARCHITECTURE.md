@@ -44,6 +44,8 @@ Errors before the first chunk come back as JSON with a friendly message and are 
 | Teaching style | `learningStyles[style].prompt` |
 | Game context | Rules for using games + a fact sheet per chosen game (`games.js`) |
 | Formatting | Markdown, LaTeX math with `$…$`, no bare dollar signs |
+| Interactive exercises | How to place a `[[quest:topic:level]]` marker, and the list of valid topics |
+| Practice record | Per-topic totals and the last five results, if the student has practiced |
 | For this reply | The quick action's instruction, or else a hint from the detected intent |
 
 Fact sheets are what keep references accurate: the model is told to prefer them and never invent stats. Games outside the catalogue get no sheet and the model relies on its own knowledge.
@@ -62,6 +64,16 @@ game pack scenario (r) ──▶ builder (Q.linear / percent / ratio / fn / syst
 
 No AI is involved, so quests work offline and the answer key is always right.
 
+English drills (`lib/drills.js`) follow the same idea with multiple choice: sentence templates are filled with each game pack's `lex` words (an item, a place, creatures, two thesis claims), and the options are shuffled. `lib/practice.js` puts both behind one function, `makePractice({ topic, level, game, seed })`.
+
+## How chat and quests connect
+
+1. **Tutor → quest.** The system prompt tells the model it can write `[[quest:topic:level]]`. `splitContent()` cuts a reply into text and marker parts; `Message` renders each marker as a `PracticeCard`. The exercise is generated from a seed derived from the message id and marker position, and from the game stamped on the message when it was created, so it is identical on every render and after a reload. Half-written markers are hidden while streaming; unknown topics are dropped.
+2. **Quest → record.** Finishing any exercise calls `progress.record()`, which updates XP, streak, per-topic totals and a short list of recent results. For an exercise in chat the result is also saved on the message (`questResults`), so it stays finished and cannot be re-farmed for XP.
+3. **Record → tutor.** Each request carries the practice record; the server sanitises it (known topic ids, clamped integers) and adds it to the prompt. In the message history, `contentForAi()` replaces every marker with the actual exercise text, the correct answer and the student's result.
+
+Demo mode uses the same markers, so asking for practice without an AI key still produces a live quest in the chat.
+
 ## State
 
 All state is React state persisted to `localStorage` through `useLocalStorage`.
@@ -71,7 +83,7 @@ All state is React state persisted to `localStorage` through `useLocalStorage`.
 | `sveti-messages-algebra`, `sveti-messages-english` | Chat history per subject (last 200 messages) |
 | `sveti-game-prefs` | Up to 3 game names |
 | `sveti-game-asked` | Whether the game picker has been shown |
-| `sveti-progress` | `{ xp, streak, best, solved }` |
+| `sveti-progress` | `{ xp, streak, best, solved, topics, recent }` |
 | `sveti-learning-style`, `sveti-subject`, `sveti-theme` | Preferences |
 
 `useLocalStorage` tolerates a changing key: switching subject re-reads that subject's history, and a late write from the previous subject goes to the previous key.
@@ -82,7 +94,8 @@ All state is React state persisted to `localStorage` through `useLocalStorage`.
 - The client cannot send a system prompt; roles other than `user`/`assistant` are dropped.
 - Limits: 16 messages, 4,000 characters each, 900 output tokens, 3 games of 40 characters.
 - Custom game names are stripped of markup and newlines before entering the prompt.
-- There is no rate limiting yet (see TODO.md).
+- Requests are rate-limited per IP (30 per 5 minutes) in memory. On serverless this is per warm instance — it slows abuse down but is not a hard cap; see TODO.md.
+- The practice record is reduced to known topic ids and clamped integers before it enters the prompt.
 
 ## Optional Python intent service
 

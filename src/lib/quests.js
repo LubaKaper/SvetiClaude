@@ -4,6 +4,7 @@
  * are always right and quests work offline.
  */
 import { resolveGame } from '../config/games.js'
+import { makeRng } from './rng.js'
 
 export const TOPICS = [
   { id: 'linear', name: 'Linear equations', blurb: 'Solve for the unknown' },
@@ -18,18 +19,6 @@ export const LEVELS = [
   { id: 2, name: 'Medium', xp: 20 },
   { id: 3, name: 'Hard', xp: 30 },
 ]
-
-/** Small seedable PRNG (mulberry32) so quests can be reproduced in tests. */
-export function makeRng(seed = (Math.random() * 2 ** 32) >>> 0) {
-  let a = seed >>> 0
-  return () => {
-    a = (a + 0x6d2b79f5) >>> 0
-    let t = a
-    t = Math.imul(t ^ (t >>> 15), t | 1)
-    t ^= t + Math.imul(t ^ (t >>> 7), t | 61)
-    return ((t ^ (t >>> 14)) >>> 0) / 4294967296
-  }
-}
 
 /** Random helpers handed to game-pack scenarios. */
 function helpers(rand, level) {
@@ -107,10 +96,4 @@ export function questXp({ level, hintsUsed = 0, attempts = 1, revealed = false }
   const base = LEVELS[level - 1]?.xp ?? 10
   const firstTry = attempts <= 1 && hintsUsed === 0 ? 5 : 0
   return Math.max(2, Math.round(base * (1 - 0.25 * Math.min(hintsUsed, 3)))) + firstTry
-}
-
-/** Plain-text version of a quest, for handing it to the AI tutor. */
-export function questToPrompt(quest) {
-  const story = quest.story.replace(/\*\*/g, '')
-  return `I'm stuck on this ${quest.game.name} quest:\n\n${story} ${quest.ask}\n\nCan you help me figure out how to start?`
 }

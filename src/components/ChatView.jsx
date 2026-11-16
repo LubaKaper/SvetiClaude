@@ -54,7 +54,7 @@ function EmptyState({ subject, packs, onStarter, onPickGames }) {
 }
 
 /** The conversation: welcome screen or message list, plus the composer. */
-export default function ChatView({ chat, subject, packs, draft, onPickGames }) {
+export default function ChatView({ chat, subject, packs, draft, onPickGames, onQuestFinish }) {
   const { messages, isLoading, status, sendMessage, stop } = chat
   const scrollRef = useRef(null)
 
@@ -85,7 +85,7 @@ export default function ChatView({ chat, subject, packs, draft, onPickGames }) {
             aria-label="Conversation with Sveti"
           >
             {visible.map((m) => (
-              <Message key={m.id} message={m} streaming={Boolean(m.pending && isLoading)} />
+              <Message key={m.id} message={m} streaming={Boolean(m.pending && isLoading)} onQuestFinish={onQuestFinish} />
             ))}
           </div>
         )}

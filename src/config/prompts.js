@@ -6,6 +6,7 @@
  */
 import { resolveGame, normalizeGamePrefs } from './games.js'
 import { getLearningStylePrompt } from './learningStyles.js'
+import { PRACTICE, formatPracticeRecord } from '../lib/practice.js'
 
 export const SUBJECTS = {
   algebra: {
@@ -27,7 +28,7 @@ export const SUBJECTS = {
       practice: {
         label: 'Practice',
         starter: 'Give me practice problems on: ',
-        prompt: 'Write exactly 3 practice problems: one easier, one on-level, one stretch. Do not include solutions; ask the student to try the first one and send their answer.',
+        prompt: 'The student wants practice. If the topic is covered by the interactive exercises, give exactly one exercise marker at a fitting difficulty and one encouraging sentence. Otherwise write 3 problems (easier, on-level, stretch) without solutions and ask them to try the first.',
       },
       check: {
         label: 'Check my work',
@@ -79,7 +80,7 @@ export function getActionChips(subject) {
 const INTENT_HINTS = {
   check_answer: 'The student wants their work checked. Verify it carefully before you respond.',
   motivation: 'The student sounds frustrated or stuck. Acknowledge that briefly and sincerely, shrink the problem to one small next step, and keep this reply short.',
-  practice: 'The student wants practice. Give problems to try rather than a lecture.',
+  practice: 'The student wants practice. Prefer an interactive exercise marker if the topic is covered; otherwise give problems to try rather than a lecture.',
   give_example: 'The student wants an example. Lead with a concrete worked example.',
   explain_concept: 'The student wants the idea explained. Explain first, then check understanding.',
 }
@@ -120,6 +121,20 @@ Fact sheets
 ${sheets}`
 }
 
+function exerciseBlock(subject) {
+  const topics = PRACTICE[subject].map((t) => `  - ${t.id} — ${t.name}`).join('\n')
+  const marker = subject === 'english' ? '[[quest:TOPIC]]' : '[[quest:TOPIC:LEVEL]]'
+  const levels = subject === 'english' ? '' : ' LEVEL is 1 (easy), 2 (medium) or 3 (hard).'
+  return `INTERACTIVE EXERCISES
+You can place a live, auto-graded exercise in your reply by writing ${marker} on its own line.${levels} TOPIC is one of:
+${topics}
+The app replaces the marker with an exercise themed to the student's game, with hints, instant checking and a worked solution. In later turns you will see the exact exercise and how the student did.
+- Use one when the student asks for practice on a covered topic, or to check understanding after you explain one.
+- At most one marker per reply. Never invent other topic names.
+- You do not know the exercise's numbers or wording in advance, so do not describe, solve or hint at it. Introduce it in one short sentence and let the app do the rest.
+- For anything the list does not cover, write practice problems yourself.`
+}
+
 /**
  * Build the full system prompt.
  * @param {object} opts
@@ -128,8 +143,9 @@ ${sheets}`
  * @param {string|null} opts.action   - quick-action id for this turn
  * @param {string[]} opts.games       - the student's games
  * @param {string|null} opts.intent   - detected intent for this turn
+ * @param {object|null} opts.practice - the student's practice record
  */
-export function buildSystemPrompt({ subject, learningStyle, action = null, games = [], intent = null } = {}) {
+export function buildSystemPrompt({ subject, learningStyle, action = null, games = [], intent = null, practice = null } = {}) {
   const subj = getSubject(subject)
   const actionPrompt = action && subj.actions[action] ? subj.actions[action].prompt : null
   const intentHint = intent && INTENT_HINTS[intent]
@@ -161,6 +177,15 @@ ${getLearningStylePrompt(learningStyle)}`,
 - Never use a bare dollar sign for money; write "5 dollars" or use the game's currency.
 - Use tables only when comparing values.`,
   ]
+
+  parts.push(exerciseBlock(subj.id))
+
+  const record = formatPracticeRecord(practice)
+  if (record) {
+    parts.push(`PRACTICE RECORD (from the app's auto-graded exercises)
+${record}
+Use this to pitch difficulty and choose what to practice next: step down or re-teach after a give-up, step up after clean solves. Mention it only when it helps.`)
+  }
 
   if (actionPrompt) parts.push(`FOR THIS REPLY\n${actionPrompt}`)
   else if (intentHint) parts.push(`FOR THIS REPLY\n${intentHint}`)
